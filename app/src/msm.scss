@@ -1,0 +1,150 @@
+// Foundation
+html {
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+body {
+    margin: 0;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3,
+h4,
+p,
+blockquote,
+figure,
+ol,
+ul {
+    margin: 0;
+    padding: 0;
+}
+ul {
+    list-style: none;
+}
+main,
+li {
+    display: block;
+}
+a,
+button {
+    transition: .3s;
+}
+a {
+    text-decoration: none;
+}
+img {
+    max-width: 100%;
+    height: auto;
+    border: 0;
+}
+
+// Site=specific
+#container {
+    min-width: 320px;
+}
+.tab-form {
+    padding: 15px;
+}
+.side-padded {
+    padding: 0 15px;
+}
+.wide-modal {
+    width: 90%;
+}
+
+// Force the nav to stay on the same line at small screen sizes
+.nav-xs-left {
+    float: left !important;
+}
+.nav-xs-right {
+    float: right !important;
+}
+
+svg {
+    display: inline-block;
+    width: 100%; height: 100%;
+}
+.dash-cell-container {
+    margin-bottom: 30px;
+}
+.dash-cell {
+    background: #eee;
+    border-radius: 4px;
+    min-height: 205px;
+}
+.dash-cell-header {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px;
+}
+.dash-cell-content {
+    padding-bottom: 8px;
+}
+.dash-cell-row {
+    padding: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dash-cell-row>span {
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: bold;
+}
+.dash-cell-action-bar{
+    padding: 8px 8px 0;
+    clear: both;
+}
+.dash-cell-action-bar>button {
+    margin-right: 8px;
+}
+
+// Modififiers for server widget
+.server-active {
+    background: #e0ffe0;
+}
+
+// Horizontal bar gauge
+.hbar-label {
+    font-size: 9px;
+    font-weight: bold;
+    padding: 0 8px 0 4px;
+    height: 30px;
+    line-height: 30px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.hbar-gauge {
+    display: inline-block;
+    height: 30px;
+    padding: 3px 0;
+}
+.hbar-value {
+    font-size: 18px;
+    padding: 0 4px;
+    text-align: center;
+    height: 30px;
+    line-height: 30px;
+}
+
+// Donut gauge
+.donut-gauge {
+    margin: 15px 8px 0;
+    width: 140px;
+    height: 70px;
+    //border: 1px solid cyan;
+}
+
+@media (max-width: $screen-xs-max) {
+    .modal {
+        padding: 0;
+        min-width: 310px;
+    }
+    .wide-modal {
+        width: 98%;
+        margin: 10px 0;
+    }
+}

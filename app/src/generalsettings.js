@@ -1,0 +1,185 @@
+import React from 'react';
+
+import { Form, FormGroup, FormControl, ControlLabel, Col, Radio } from 'react-bootstrap';
+
+const GeneralSettings = React.createClass({
+    displayName: 'GeneralSettings',
+    propTypes: {
+        name: React.PropTypes.string,
+        mcVersion: React.PropTypes.string,
+        port: React.PropTypes.number,
+        gameMode: React.PropTypes.number,
+        difficulty: React.PropTypes.number,
+        motd: React.PropTypes.string,
+        setState: React.PropTypes.func.isRequired
+    },
+    onTextChange(field, evt) {
+        this.props.setState({ [field]: evt.target.value });
+    },
+    onNumberChange(field, evt) {
+        this.props.setState({ [field]: parseInt(evt.target.value, 10) || 0 });
+    },
+    getValidationState(field) {
+        const { name, port, motd } = this.props;
+        switch (field) {
+        case 'name':
+            return (name.length > 0) ? '' : 'has-error';
+        case 'port':
+            return (port > 1023 && port < 65536) ? '' : 'has-error';
+        case 'motd':
+            return (motd.length > 0) ? '' : 'has-error';
+        }
+    },
+    render() {
+        const { name, mcVersion, port, gameMode, difficulty, motd, setState } = this.props;
+        return (
+            <Form horizontal className="tab-form">
+                <FormGroup controlId="name" className={ this.getValidationState('name') }>
+                    <Col componentClass={ ControlLabel } sm={ 2 }>Name</Col>
+                    <Col sm={ 10 }>
+                        <FormControl type="text" value={ name } onChange={ (e) => this.onTextChange('name', e) } />
+                    </Col>
+                </FormGroup>
+
+                <FormGroup >
+                    <Col componentClass={ ControlLabel } sm={ 2 }>MC Version</Col>
+                    <Col sm={ 2 }>
+                        <FormControl
+                            componentClass="select"
+                            id="mcVersion"
+                            value={ mcVersion }
+                            onChange={ (e) => this.onTextChange('mcVersion', e) }
+                        >
+                            <option value="1.9.4">1.9.4</option>
+                            <option value="1.9">1.9</option>
+                            <option value="1.8.9">1.8.9</option>
+                            <option value="1.8.8">1.8.8</option>
+                        </FormControl>
+                    </Col>
+                </FormGroup>
+                <FormGroup className={ this.getValidationState('port') }>
+                    <Col componentClass={ ControlLabel } sm={ 2 }>Port</Col>
+                    <Col sm={ 2 }>
+                        <FormControl
+                            type="text"
+                            id="port"
+                            value={ port || '' }
+                            onChange={ (e) => this.onNumberChange('port', e) }
+                        />
+                    </Col>
+                </FormGroup>
+
+                <FormGroup>
+                    <Col componentClass={ ControlLabel } sm={ 2 }>Game Mode</Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="gameMode"
+                            checked={ gameMode === 0 }
+                            onChange={ () => setState({ gameMode: 0 }) }
+                        >
+                            Survival
+                        </Radio>
+                    </Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="gameMode"
+                            checked={ gameMode === 1 }
+                            onChange={ () => setState({ gameMode: 1 }) }
+                        >
+                            Creative
+                        </Radio>
+                    </Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="gameMode"
+                            checked={ gameMode === 2 }
+                            onChange={ () => setState({ gameMode: 2 }) }
+                        >
+                            Adventure
+                        </Radio>
+                    </Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="gameMode"
+                            checked={ gameMode === 3 }
+                            onChange={ () => setState({ gameMode: 3 }) }
+                        >
+                            Spectator
+                        </Radio>
+                    </Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="gameMode"
+                            checked={ gameMode === 99 }
+                            onChange={ () => setState({ gameMode: 99 }) }
+                        >
+                            Hardcore
+                        </Radio>
+                    </Col>
+                </FormGroup>
+
+                <FormGroup>
+                    <Col componentClass={ ControlLabel } sm={ 2 }>Difficulty</Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="difficulty"
+                            checked={ difficulty === 0 }
+                            onChange={ () => setState({ difficulty: 0 }) }
+                        >
+                            Peaceful
+                        </Radio>
+                    </Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="difficulty"
+                            checked={ difficulty === 1 }
+                            onChange={ () => setState({ difficulty: 1 }) }
+                        >
+                            Easy
+                        </Radio>
+                    </Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="difficulty"
+                            checked={ difficulty === 2 }
+                            onChange={ () => setState({ difficulty: 2 }) }
+                        >
+                            Normal
+                        </Radio>
+                    </Col>
+                    <Col sm={ 2 }>
+                        <Radio
+                            inline
+                            name="difficulty"
+                            checked={ difficulty === 3 }
+                            onChange={ () => setState({ difficulty: 3 }) }
+                        >
+                            Hard
+                        </Radio>
+                    </Col>
+                </FormGroup>
+
+                <FormGroup controlId="motd" className={ this.getValidationState('motd') }>
+                    <Col componentClass={ ControlLabel } sm={ 2 }>MOTD</Col>
+                    <Col sm={ 10 }>
+                        <FormControl
+                            type="text"
+                            value={ motd }
+                            onChange={ (e) => this.onTextChange('motd', e) }
+                        />
+                    </Col>
+                </FormGroup>
+            </Form>
+        );
+    }
+});
+
+export default GeneralSettings;

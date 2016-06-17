@@ -1,0 +1,9 @@
+*.swp
+*.tar
+*.tar.gz
+*.tgz
+node_modules/
+app/build/
+server/src/localsettings.js
+npm-debug.log
+coverage/
