@@ -20,14 +20,18 @@ const CrackedCobble = React.createClass({
         };
     },
     componentDidMount() {
-        // TODO - This isn't terribly efficient since any number of clients will cause the server to
-        // work at 5 and 10 second intervals each.  In the future, switch the monitoring actions to the server
-        // and upgrade this client to receive updates over websockets
-        this.systemStatusInterval = setInterval(() => this.props.dispatch(actions.refreshSystem()), 5000);
-        this.serverStatusInterval = setInterval(() => this.props.dispatch(actions.refreshServers()), 10000);
+        const { dispatch } = this.props;
 
-        this.props.dispatch(actions.refreshSystem());
-        this.props.dispatch(actions.refreshServers());
+        dispatch(actions.refreshSystem());
+        dispatch(actions.refreshServers());
+
+        const ws = window.io();
+        ws.on('systemStatus', (status) => {
+            return dispatch({ type: 'SYSTEM_STATUS_RECEIVED', status });
+        });
+        ws.on('serverStatusChange', (server) => {
+            return dispatch({ type: 'SERVER_STATUS_RECEIVED', server });
+        });
     },
     componentWillUnmount() {
         clearInterval(this.systemStatusInterval);

@@ -5,9 +5,11 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+const server = require('http').createServer(app);
+const sio = require('socket.io')(server);
 
-const serversRouter = require('./servers').router;
-const systemRouter = require('./system').router;
+const serversRes = require('./servers');
+const systemRes = require('./system');
 
 const settings = require('./settings');
 console.log('Using settings: ');
@@ -21,8 +23,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/servers', serversRouter);
-app.use('/system', systemRouter);
+app.use('/servers', serversRes.router);
+app.use('/system', systemRes.router);
 
 app.use(express.static(settings.appPath));
 
@@ -31,7 +33,17 @@ app.get('/', (req, res) => {
     res.sendFile(index);
 });
 
+sio.on('connection', (socket) => {
+    console.log(`Socket ${socket.id} connected.`);
+    socket.on('close', () => {
+        console.log(`Socket ${socket.id} disconnected.`);
+    });
+});
 
-app.listen(settings.port, () => {
+// Monitor system status ever 5 seconds
+systemRes.startMonitor(sio, 5000);
+serversRes.registerSocketIo(sio);
+
+server.listen(settings.port, () => {
     console.log(`CrackedCobble server started on port ${settings.port}`);
 });

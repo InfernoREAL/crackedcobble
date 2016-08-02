@@ -42,7 +42,20 @@ router.get('/status', (req, res) => {
     });
 });
 
+const startMonitor = (io, interval) => {
+    setInterval(() => {
+        getStatus()
+        .then((status) => {
+            io.emit('systemStatus', status);
+        })
+        .catch((err) => {
+            console.log(`error getting status: ${err}`);
+        });
+    }, interval);
+};
+
 module.exports = {
     router,
-    getStatus
+    getStatus,
+    startMonitor
 };

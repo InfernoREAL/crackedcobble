@@ -24,6 +24,11 @@ const serverControlFile = 'crackedcobble.json';
 // Active server map
 const activeServers = {};
 
+let sio = null;
+const registerSocketIo = (io) => {
+    sio = io;
+};
+
 /**
  * Returns an array of minecraft server instances in the form:
  * [
@@ -84,30 +89,8 @@ const getServerStatus = (serverId) => {
     const server = activeServers[serverId];
     const status = {
         active: server ? true : false,
-        numPlayers: 0
+        numPlayers: server ? server.numPlayers : 0
     };
-    if (status.active) {
-        return new BPromise((resolve, reject) => {
-            const con = rl.createInterface(server.process.stdout, null);
-            let parsedOutput = false;
-            con.on('line', (line) => {
-                const m = line.match(/There are (\d+)\/\d+ players online/);
-                if (m) {
-                    parsedOutput = true;
-                    status.numPlayers = parseInt(m[1], 10);
-                    con.close();
-                    return resolve(status);
-                }
-            });
-            con.on('close', () => {
-                if (!parsedOutput) {
-                    return reject('Unable to read number of players');
-                }
-            });
-            // Try to get a player count
-            server.process.stdin.write('\nlist\n');
-        });
-    }
     return BPromise.resolve(status);
 };
 
@@ -176,18 +159,68 @@ const activateServer = (serverId) => {
         const mcPath = path.join(assetPath, `minecraft_server_${info.mcVersion}.jar`);
         const server = {
             info,
+            numPlayers: 0,
             process: cp.spawn('java', ['-Xmx1024M', '-Xms1024M', '-jar', mcPath, 'nogui'], { cwd: serverPath })
         };
         console.log(`Server ${serverId} started with pid ${server.process.pid}`);
+        // Mark this server as active
+        activeServers[serverId] = server;
+
+        // Send an status update for this server
+        const sendStatusUpdate = () => {
+            getServerInfo(serverId)
+            .then((info) => {
+                sio.emit('serverStatusChange', info);
+            })
+            .catch((err) => {
+                console.log(`Failed to get server status: ${err.toString()}`);
+            });
+        };
+
+        const rmServer = () => {
+            if (server.con) {
+                server.con.close();
+            }
+            delete activeServers[serverId];
+        };
+        sendStatusUpdate();
+
+        // Handle process events for the server
         server.process.on('close', (code) => {
             console.log(`Server ${serverId} exited with code ${code}`);
-            delete activeServers[serverId];
+            rmServer();
+            sendStatusUpdate();
         });
         server.process.on('error', (err) => {
             console.log(`An error occured: ${err.toString()}`);
-            delete activeServers[serverId];
+            rmServer();
+            sendStatusUpdate();
         });
-        activeServers[serverId] = server;
+
+        // Create a console connection to allow interaction with the server
+        server.con = rl.createInterface(server.process.stdout, null);
+        server.con.on('line', (line) => {
+            // Send a status update when the number of players are listed
+            let m = line.match(/There are (\d+)\/\d+ players online/);
+            if (m) {
+                server.numPlayers = parseInt(m[1], 10);
+                sendStatusUpdate();
+            }
+            // When a player joins or leaves, get the number of players online
+            m = line.match(/joined the game/);
+            if (m) {
+                console.log('listing players due to a new player joining');
+                server.process.stdin.write('list\n');
+            }
+            m = line.match(/left the game/);
+            if (m) {
+                console.log('listing players due to a new player leaving');
+                server.process.stdin.write('list\n');
+            }
+        });
+        server.con.on('close', () => {
+            server.con = null;
+        });
     });
 };
 
@@ -282,5 +315,6 @@ router.get('/', (req, res) => {
 module.exports = {
     router,
     getServerInfo,
-    getServerList
+    getServerList,
+    registerSocketIo
 };
