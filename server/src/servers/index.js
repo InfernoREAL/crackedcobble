@@ -156,11 +156,20 @@ const activateServer = (serverId) => {
     const serverPath = path.join(serverBasePath, serverId);
     return fsutil.loadJson(path.join(serverPath, serverControlFile))
     .then((info) => {
-        const mcPath = path.join(assetPath, `minecraft_server_${info.mcVersion}.jar`);
+        // Fill in any command parameters that are not specified
+        const startup = Object.assign({}, {
+            command: 'java',
+            javaArgs: ['-Xmx1024M', '-Xms1024M'],
+            jar: path.join(assetPath, `minecraft_server_${info.mcVersion}.jar`),
+            serverArgs: ['nogui']
+        }, info.startup);
+        const jar = startup.jar.startsWith('/') ? startup.jar : path.join(assetPath, startup.jar);
+        const cmdLine = [].concat(startup.javaArgs, ['-jar', jar], startup.serverArgs);
+        console.log(`Starting server ${serverId} with cmd: ${startup.command} ${cmdLine.join(' ')}`);
         const server = {
             info,
             numPlayers: 0,
-            process: cp.spawn('java', ['-Xmx1024M', '-Xms1024M', '-jar', mcPath, 'nogui'], { cwd: serverPath })
+            process: cp.spawn(startup.command, cmdLine, { cwd: serverPath })
         };
         console.log(`Server ${serverId} started with pid ${server.process.pid}`);
         // Mark this server as active
