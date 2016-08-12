@@ -1,4 +1,9 @@
 const defaultState = {
+    isNetworkActive: false,
+    serverEdit: {
+        active: false,
+        errors: []
+    },
     system: {
         status: {
             memoryUsage: 0,
@@ -31,6 +36,28 @@ const reducer = (state = defaultState, action) => {
         break;
     case 'SERVER_BULK_INFO_RECEIVED':
         newState = Object.assign({}, state, { servers: action.servers });
+        break;
+    case 'SERVER_CREATE_REQUESTED':
+        newState = Object.assign({}, state, { isNetworkActive: true });
+        break;
+    case 'SERVER_CREATED':
+        if (action.server.error) {
+            newState = Object.assign({}, state, {
+                isNetworkActive: false,
+                serverEdit: { active: true, errors: [action.server.error] }
+            });
+        } else {
+            newState = Object.assign({}, state, {
+                isNetworkActive: false,
+                serverEdit: { active: false, errors: [] }
+            });
+        }
+        break;
+    case 'SHOW_SERVER_CREATE':
+        newState = Object.assign({}, state, { serverEdit: { active: true, errors: [] } });
+        break;
+    case 'CANCEL_SERVER_CREATE':
+        newState = Object.assign({}, state, { serverEdit: { active: false, errors: [] } });
         break;
     }
     console.log(newState);

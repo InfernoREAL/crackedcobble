@@ -67,6 +67,7 @@ const Dashboard = React.createClass({
                                         flavor={ server.flavor }
                                         mode={ server.mode }
                                         difficulty={ server.difficulty }
+                                        hardcore={ server.hardcore }
                                         isActive={ server.isActive }
                                         onServerStart={ onServerStart }
                                         onServerStop={ onServerStop }

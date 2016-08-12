@@ -35,8 +35,20 @@ const propertyFile = {
         } else {
             this.addProperty(key, value);
         }
+    },
+    save(file) {
+        return fs.writeFileAsync(file, this.stringify());
+    },
+    stringify() {
+        const formattedLines = this.lines.map((el) => {
+            if (el.type === 'comment') {
+                return `#${el.value}`;
+            } else if (el.type === 'property') {
+                return `${el.key}=${el.value}`;
+            }
+        });
+        return formattedLines.join('\n') + '\n';
     }
-    // TODO - add write support
 };
 
 
@@ -68,6 +80,7 @@ const parse = (data) => {
     return props;
 };
 
+
 /**
  * Loads and parses `file` as a property file in a single step. Results are returned via Promise fulfillment.
  */
@@ -77,6 +90,7 @@ const load = (file) => {
         return parse(data);
     });
 };
+
 
 module.exports = {
     createPropertyFile,

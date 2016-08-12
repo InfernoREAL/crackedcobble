@@ -7,7 +7,7 @@ const AdvancedSettings = React.createClass({
     propTypes: {
         seed: React.PropTypes.string,
         playerLimit: React.PropTypes.number.isRequired,
-        javaArgs: React.PropTypes.string,
+        javaArgs: React.PropTypes.array,
         onlineMode: React.PropTypes.bool.isRequired,
         announceAchievements: React.PropTypes.bool.isRequired,
         enableSnooper: React.PropTypes.bool.isRequired,
@@ -31,6 +31,11 @@ const AdvancedSettings = React.createClass({
     },
     onCheckboxChange(field, value) {
         this.props.setState({ [field]: value });
+    },
+    onArgsChange(evt) {
+        let args = evt.target.value.split(/[ ,;]/);
+        args = args.filter((a, idx) => a.trim().length > 0 || idx === (args.length - 1));
+        this.props.setState({ javaArgs: args });
     },
     getValidationState(field) {
         const { seed, playerLimit } = this.props;
@@ -221,8 +226,8 @@ const AdvancedSettings = React.createClass({
                         <FormControl
                             type="text"
                             placeholder="Auto"
-                            value={ javaArgs }
-                            onChange={ (e) => this.onTextChange('javaArgs', e) }
+                            value={ javaArgs.join(' ') }
+                            onChange={ (e) => this.onArgsChange(e) }
                         />
                     </Col>
                 </FormGroup>

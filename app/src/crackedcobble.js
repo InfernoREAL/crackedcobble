@@ -12,12 +12,9 @@ const CrackedCobble = React.createClass({
     propTypes: {
         dispatch: React.PropTypes.func.isRequired,
         system: React.PropTypes.object.isRequired,
-        servers: React.PropTypes.array.isRequired
-    },
-    getInitialState() {
-        return {
-            showCreateModal: false
-        };
+        servers: React.PropTypes.array.isRequired,
+        isNetworkActive: React.PropTypes.bool.isRequired,
+        serverEdit: React.PropTypes.object.isRequired
     },
     componentDidMount() {
         const { dispatch } = this.props;
@@ -32,6 +29,9 @@ const CrackedCobble = React.createClass({
         ws.on('serverStatusChange', (server) => {
             return dispatch({ type: 'SERVER_STATUS_RECEIVED', server });
         });
+        ws.on('serverAdded', () => {
+            return dispatch(actions.refreshServers());
+        });
     },
     componentWillUnmount() {
         clearInterval(this.systemStatusInterval);
@@ -41,10 +41,10 @@ const CrackedCobble = React.createClass({
     },
     onCreate(evt) {
         evt.preventDefault();
-        this.setState({ showCreateModal: true });
+        this.props.dispatch({ type: 'SHOW_SERVER_CREATE' });
     },
     cancelCreate() {
-        this.setState({ showCreateModal: false });
+        this.props.dispatch({ type: 'CANCEL_SERVER_CREATE' });
     },
     onServerStart(serverId) {
         this.props.dispatch(actions.startServer(serverId));
@@ -52,8 +52,13 @@ const CrackedCobble = React.createClass({
     onServerStop(serverId) {
         this.props.dispatch(actions.stopServer(serverId));
     },
+    onCreateServer(server) {
+        console.log('creating server...');
+        console.log(server);
+        this.props.dispatch(actions.createServer(server));
+    },
     render() {
-        const { system, servers } = this.props;
+        const { isNetworkActive, serverEdit, system, servers } = this.props;
         return (
             <Grid fluid>
                 <Row style={ { marginTop: 65 } }>
@@ -76,12 +81,17 @@ const CrackedCobble = React.createClass({
                         onServerStop={ this.onServerStop }
                     />
                 </Row>
-                <Modal show={ this.state.showCreateModal } onHide={ this.cancelCreate } dialogClassName="wide-modal">
+                <Modal show={ serverEdit.active } onHide={ this.cancelCreate } dialogClassName="wide-modal">
                     <Modal.Header closeButton>
                         <Modal.Title>Create Server...</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <ServerSettings />
+                        <ServerSettings
+                            isNetworkActive={ isNetworkActive }
+                            serverEdit= { serverEdit }
+                            onClose={ this.cancelCreate }
+                            onCreate={ this.onCreateServer }
+                        />
                     </Modal.Body>
                 </Modal>
             </Grid>

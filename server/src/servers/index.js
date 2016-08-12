@@ -4,6 +4,7 @@ const BPromise = require('bluebird');
 const fs = BPromise.promisifyAll(require('fs'));
 const cp = require('child_process');
 const path = require('path');
+const os = require('os');
 const rl = require('readline');
 
 const express = require('express');
@@ -128,8 +129,9 @@ const getServerInfo = (serverId) => {
         info.id = serverId;
         info.port = parseInt(serverProps.get('server-port'), 0);
         info.motd = serverProps.get('motd');
-        info.mode = (serverProps.get('hardcore') === 'true' ? 4 : parseInt(serverProps.get('gamemode'), 0));
+        info.mode = parseInt(serverProps.get('gamemode'), 0);
         info.difficulty = parseInt(serverProps.get('difficulty'), 10);
+        info.hardcore = serverProps.get('hardcore') === 'true' ? true : false;
         info.maxPlayers = parseInt(serverProps.get('max-players'), 10);
         info.numPlayers = 0;
         info.isActive = activeServers.hasOwnProperty(serverId);
@@ -246,6 +248,106 @@ const deactivateServer = (serverId) => {
 };
 
 
+/**
+ * Utility that turns a server name into an id. All non-word characters are converted to underscores.
+ */
+const nameToId = (name) => {
+    return name.trim().toLowerCase().replace(/\W+?/g, '_');
+};
+
+
+/**
+ * Utility that updates a properties file object with settings from the server creator/editor.
+ */
+const updateServerProperties = (propFile, info) => {
+    const general = info.general;
+    const advanced = info.advanced;
+    propFile.addProperty('allow-nether', advanced.allowNether);
+    propFile.addProperty('gamemode', general.gameMode);
+    propFile.addProperty('difficulty', general.difficulty);
+    propFile.addProperty('hardcore', general.hardcore);
+    propFile.addProperty('spawn-monsters', advanced.spawnMonsters);
+    propFile.addProperty('announce-player-achievements', advanced.announceAchievements);
+    propFile.addProperty('pvp', advanced.pvp);
+    propFile.addProperty('snooper-enabled', advanced.enableSnooper);
+    propFile.addProperty('level-type', advanced.levelType);
+    propFile.addProperty('enable-command-block', advanced.enableCommandBlock);
+    propFile.addProperty('max-players', advanced.playerLimit);
+    propFile.addProperty('server-port', general.port);
+    propFile.addProperty('spawn-npcs', advanced.spawnNpcs);
+    propFile.addProperty('allow-flight', advanced.allowFlight);
+    propFile.addProperty('spawn-animals', advanced.spawnAnimals);
+    propFile.addProperty('generate-structures', advanced.generateStructures);
+    propFile.addProperty('online-mode', advanced.onlineMode);
+    propFile.addProperty('level-seed', advanced.seed);
+    propFile.addProperty('motd', general.motd);
+};
+
+
+/**
+ * Creates a new server using the parameters contained in info
+ */
+const createServer = (info) => {
+    console.log(info);
+    // Create server id
+    const serverId = nameToId(info.general.name);
+    const serverPath = path.join(serverBasePath, serverId);
+    const d = new Date().toString().split(' ');
+    const timeStamp = `${d[0]} ${d[1]} ${d[2]} ${d[4]} ${d[6].replace(/[()]/g, '')} ${d[3]}`;
+
+    // Make server directory
+    return fs.mkdirAsync(serverPath)
+    .then(() => {
+        // Create eula.txt
+        const eula = path.join(serverPath, 'eula.txt');
+        return fs.writeFileAsync(eula,
+            '#By changing the setting below to TRUE you are indicating your agreement to our EULA ' +
+            '(https://account.mojang.com/documents/minecraft_eula).\n' +
+            `#${timeStamp}\n` +
+            'eula=true\n');
+    })
+    .then(() => {
+        // Create server.properties
+        const propFile = props.createPropertyFile();
+        propFile.addComment('Minecraft server properties');
+        propFile.addComment(timeStamp);
+        updateServerProperties(propFile, info);
+        return propFile.save(path.join(serverPath, serverPropertiesFile));
+    })
+    .then(() => {
+        // Create crackedcobble.json
+        const config = {
+            name: info.general.name,
+            mcVersion: info.general.mcVersion,
+            host: os.hostname(),
+            flavor: 'vanilla',
+            startup: {}
+        };
+        // Put in custom args if provided
+        const javaArgs = info.advanced.javaArgs.filter(a => a.trim().length > 0);
+        if (javaArgs.length > 0) {
+            config.startup.javaArgs = javaArgs;
+        }
+        // Tell minecraft to generate the bonus chest if desired
+        if (info.advanced.bonusChest) {
+            config.startup.serverArgs = ['nogui', '--bonusChest'];
+        }
+        return fs.writeFile(path.join(serverPath, serverControlFile), JSON.stringify(config, 0, 4));
+    })
+    .then(() => {
+        // Server has been created, notify interested parties asynchronously
+        getServerInfo(serverId)
+        .then((info) => {
+            sio.emit('serverAdded', info);
+        })
+        .catch((err) => {
+            console.log(`Unable to get server status: ${err.toString()}`);
+        });
+        return null;
+    });
+};
+
+
 router.get('/bulk-info', (req, res) => {
     return getServerList()
     .then((serverList) => {
@@ -298,6 +400,7 @@ router.put('/:id/status', (req, res) => {
 });
 
 
+
 router.get('/:id', (req, res) => {
     getServerInfo(req.params.id)
     .then((info) => {
@@ -306,6 +409,23 @@ router.get('/:id', (req, res) => {
     .catch((err) => {
         console.log('caught:');
         return res.status(400).send(err.toString());
+    });
+});
+
+
+router.post('/', (req, res) => {
+    createServer(req.body)
+    .then(() => {
+        return res.json({});
+    })
+    .catch((err) => {
+        // Make a friendlier error message for the common situation of a user trying to create
+        // a server that already exists
+        let errString = err.toString();
+        if (errString.indexOf('EEXIST') >= 0) {
+            errString = `Server ${req.body.general.name} already exists`;
+        }
+        return res.status(400).send(errString);
     });
 });
 
@@ -321,9 +441,11 @@ router.get('/', (req, res) => {
     });
 });
 
+
 module.exports = {
-    router,
+    createServer,
     getServerInfo,
     getServerList,
-    registerSocketIo
+    registerSocketIo,
+    router
 };

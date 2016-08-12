@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Form, FormGroup, FormControl, ControlLabel, Col, Radio } from 'react-bootstrap';
+import { Form, FormGroup, FormControl, ControlLabel, Col, Checkbox, Radio } from 'react-bootstrap';
 
 const GeneralSettings = React.createClass({
     displayName: 'GeneralSettings',
@@ -10,6 +10,7 @@ const GeneralSettings = React.createClass({
         port: React.PropTypes.number,
         gameMode: React.PropTypes.number,
         difficulty: React.PropTypes.number,
+        hardcore: React.PropTypes.bool,
         motd: React.PropTypes.string,
         setState: React.PropTypes.func.isRequired
     },
@@ -18,6 +19,9 @@ const GeneralSettings = React.createClass({
     },
     onNumberChange(field, evt) {
         this.props.setState({ [field]: parseInt(evt.target.value, 10) || 0 });
+    },
+    onCheckboxChange(field, value) {
+        this.props.setState({ [field]: value });
     },
     getValidationState(field) {
         const { name, port, motd } = this.props;
@@ -31,7 +35,7 @@ const GeneralSettings = React.createClass({
         }
     },
     render() {
-        const { name, mcVersion, port, gameMode, difficulty, motd, setState } = this.props;
+        const { name, mcVersion, port, gameMode, difficulty, hardcore, motd, setState } = this.props;
         return (
             <Form horizontal className="tab-form">
                 <FormGroup controlId="name" className={ this.getValidationState('name') }>
@@ -112,14 +116,14 @@ const GeneralSettings = React.createClass({
                         </Radio>
                     </Col>
                     <Col sm={ 2 }>
-                        <Radio
+                        <Checkbox
                             inline
-                            name="gameMode"
-                            checked={ gameMode === 99 }
-                            onChange={ () => setState({ gameMode: 99 }) }
+                            name="hardcore"
+                            checked={ hardcore }
+                            onChange={ () => this.onCheckboxChange('hardcore', !hardcore) }
                         >
                             Hardcore
-                        </Radio>
+                        </Checkbox>
                     </Col>
                 </FormGroup>
 

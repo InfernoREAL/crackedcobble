@@ -30,6 +30,7 @@ const ServerWidget = React.createClass({
         flavor: React.PropTypes.string.isRequired,
         mode: React.PropTypes.number.isRequired,
         difficulty: React.PropTypes.number.isRequired,
+        hardcore: React.PropTypes.bool.isRequired,
         maxPlayers: React.PropTypes.number.isRequired,
         numPlayers: React.PropTypes.number.isRequired,
         isActive: React.PropTypes.bool.isRequired,
@@ -37,7 +38,7 @@ const ServerWidget = React.createClass({
         onServerStop: React.PropTypes.func.isRequired
     },
     render() {
-        const { id, name, url, motd, mcVersion, flavor, mode, difficulty, maxPlayers, numPlayers, isActive,
+        const { id, name, url, motd, mcVersion, flavor, mode, difficulty, hardcore, maxPlayers, numPlayers, isActive,
             onServerStart, onServerStop } = this.props;
         return (
             <div className={ 'dash-cell' + (isActive ? ' server-active' : '') }>
@@ -56,7 +57,9 @@ const ServerWidget = React.createClass({
                     </div>
                     <div className="dash-cell-row"><span>{ mcVersion } / { flavor }</span></div>
                     <div className="dash-cell-row">
-                        <span>{ modeNames[mode] } / { difficultyNames[difficulty] }</span>
+                        <span>{ modeNames[mode] } / { difficultyNames[difficulty] }
+                            { hardcore ? ' HC' : '' }
+                        </span>
                     </div>
                     <div className="dash-cell-action-bar">
                         { isActive ?

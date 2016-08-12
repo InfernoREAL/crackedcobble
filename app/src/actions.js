@@ -4,7 +4,10 @@ const fetchGet = (url) => {
     return fetch(url)
     .then((res) => {
         if (res.status >= 400) {
-            throw (new Error(res.statusText));
+            return res.text()
+            .then((text) => {
+                throw (new Error(text));
+            });
         }
         return res.json();
     });
@@ -21,7 +24,30 @@ const fetchPut = (url, payload) => {
     })
     .then((res) => {
         if (res.status >= 400) {
-            throw (new Error(res.statusText));
+            return res.text()
+            .then((text) => {
+                throw (new Error(text));
+            });
+        }
+        return res.json();
+    });
+};
+
+const fetchPost = (url, payload) => {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then((res) => {
+        if (res.status >= 400) {
+            return res.text()
+            .then((text) => {
+                throw (new Error(text));
+            });
         }
         return res.json();
     });
@@ -75,7 +101,22 @@ const stopServer = (serverId) => {
     };
 };
 
+const createServer = (server) => {
+    return (dispatch) => {
+        dispatch({ type: 'SERVER_CREATE_REQUESTED' });
+        return fetchPost('/servers', server)
+        .then((server) => {
+            return dispatch({ type: 'SERVER_CREATED', server });
+        })
+        .catch((err) => {
+            console.dir(err);
+            return dispatch({ type: 'SERVER_CREATED', server: { error: err.toString() } });
+        });
+    };
+};
+
 export default {
+    createServer,
     refreshSystem,
     refreshServers,
     startServer,

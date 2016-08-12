@@ -1,13 +1,20 @@
 import React from 'react';
 
-import { Row, Col, Tab, Tabs, ButtonGroup, Button, Alert } from 'react-bootstrap';
+import { Row, Col, Tab, Tabs, ButtonGroup, Button, Alert, Glyphicon } from 'react-bootstrap';
 
 import GeneralSettings from './generalsettings';
 import AdvancedSettings from './advancedsettings';
 
 const ServerSettings = React.createClass({
     displayName: 'ServerSettings',
+    propTypes: {
+        onClose: React.PropTypes.func.isRequired,
+        onCreate: React.PropTypes.func.isRequired,
+        isNetworkActive: React.PropTypes.bool.isRequired,
+        serverEdit: React.PropTypes.object.isRequired
+    },
     getInitialState() {
+        const { serverEdit } = this.props;
         return {
             activeTab: 'general',
             general: {
@@ -16,12 +23,13 @@ const ServerSettings = React.createClass({
                 port: 25562,
                 gameMode: 0,
                 difficulty: 2,
+                hardcore: false,
                 motd: 'Welcome to Server 1'
             },
             advanced: {
                 seed: '',
                 playerLimit: 20,
-                javaArgs: '',
+                javaArgs: [],
                 onlineMode: true,
                 announceAchievements: true,
                 enableSnooper: true,
@@ -36,8 +44,13 @@ const ServerSettings = React.createClass({
                 enableCommandBlock: false,
                 levelType: 'DEFAULT'
             },
-            errors: []
+            errors: serverEdit.errors || []
         };
+    },
+    componentWillReceiveProps(nextProps) {
+        if (this.props.serverEdit !== nextProps.serverEdit) {
+            this.setState({ errors: nextProps.serverEdit.errors });
+        }
     },
     switchTabs(key) {
         this.setState({ activeTab: key });
@@ -48,15 +61,12 @@ const ServerSettings = React.createClass({
     setAdvancedState(state) {
         this.setState({ advanced: Object.assign({}, this.state.advanced, state) });
     },
-    cancelEdit(evt) {
-        console.log(evt);
-    },
     createServer() {
         const errors = this.validateSettings();
         if (errors.length) {
             return this.setState({ errors });
         }
-        console.dir(this.state);
+        this.props.onCreate({ general: this.state.general, advanced: this.state.advanced });
     },
     validateSettings() {
         const errors = [];
@@ -92,6 +102,7 @@ const ServerSettings = React.createClass({
         );
     },
     render() {
+        const { isNetworkActive, onClose } = this.props;
         const { errors } = this.state;
         const errorList = errors.map( (e, i) => <li key={ i }>{ e }</li>);
         return (
@@ -110,16 +121,22 @@ const ServerSettings = React.createClass({
                 </Row>
                 <Row className="side-padded">
                     <Col xs={ 2 } sm={ 8 } />
-                    <Col xs={ 5 } sm={ 2 }>
-                        <ButtonGroup vertical block>
-                            <Button onClick={ this.cancelEdit }>Cancel</Button>
-                        </ButtonGroup>
-                    </Col>
-                    <Col xs={ 5 } sm={ 2 }>
-                        <ButtonGroup vertical block>
-                            <Button bsStyle="primary" onClick={ this.createServer }>Create</Button>
-                        </ButtonGroup>
-                    </Col>
+                    { isNetworkActive ?
+                        <h1 className="network-activity"><Glyphicon className="spinning" glyph="refresh" /></h1>
+                    :
+                        <div>
+                            <Col xs={ 5 } sm={ 2 }>
+                                <ButtonGroup vertical block>
+                                    <Button onClick={ onClose }>Cancel</Button>
+                                </ButtonGroup>
+                            </Col>
+                            <Col xs={ 5 } sm={ 2 }>
+                                <ButtonGroup vertical block>
+                                    <Button bsStyle="primary" onClick={ this.createServer }>Create</Button>
+                                </ButtonGroup>
+                            </Col>
+                        </div>
+                    }
                 </Row>
             </div>
         );
