@@ -1,5 +1,6 @@
 'use strict';
 
+const Readable = require('stream').Readable;
 const proxyquire = require('proxyquire');
 const test = require('tape');
 
@@ -13,6 +14,7 @@ const goodJson = {
 
 
 // Mock underlying fs utilities
+let fsFailure = false;
 const fsStub = {
     readdir(dir, callback) {
         callback(null, testFiles);
@@ -27,16 +29,33 @@ const fsStub = {
     },
 
     readFile(file, callback) {
+        if (fsFailure) {
+            throw new Error('File does not exist');
+        }
         if (file === 'good.json') {
             return callback(null, JSON.stringify(goodJson));
         } else {
             return callback(null, '"broken": { json: not good');
         }
+    },
+
+    createReadStream() {
+        const s = new Readable();
+        if (fsFailure) {
+            process.nextTick(() => {
+                s.emit('error', new Error('File does not exist'));
+            });
+            return s;
+        }
+        s.push(JSON.stringify(goodJson));
+        s.push(null);
+        return s;
     }
 };
 
 
 test('=== fsutil setup', (t) => {
+    fsFailure = false;
     t.end();
 });
 
@@ -97,6 +116,35 @@ test('loadJson throws errors on bad JSON files', (t) => {
     })
     .catch((err) => {
         t.equal(err.name, 'SyntaxError');
+        t.end();
+    });
+});
+
+
+test('sha1sum returns the hex hash of a file', (t) => {
+    fsutil.sha1sum('good.json')
+    .then((res) => {
+        t.equal(res, '5778bc442202f75ae10faf78f8ec690337304f5f');
+        t.end();
+    })
+    .catch((err) => {
+        t.fail(`Unexpected error ${err}`);
+        t.end();
+    });
+});
+
+
+test('sha1sum is rejected on error', (t) => {
+    fsFailure = true;
+    fsutil.sha1sum('foo.json')
+    .then((res) => {
+        fsFailure = false;
+        t.fail(`Unexpected result ${res}`);
+        t.end();
+    })
+    .catch((err) => {
+        fsFailure = false;
+        t.equal(err.toString(), 'Error: File does not exist');
         t.end();
     });
 });

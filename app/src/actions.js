@@ -115,10 +115,23 @@ const createServer = (server) => {
     };
 };
 
+const requestMinecraftVersions = () => {
+    return (dispatch) => {
+        return fetchGet('/assets/minecraft')
+        .then((versions) => {
+            return dispatch({ type: 'MINECRAFT_VERSIONS_RECEIVED', versions });
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+    };
+};
+
 export default {
     createServer,
     refreshSystem,
     refreshServers,
+    requestMinecraftVersions,
     startServer,
     stopServer
 };

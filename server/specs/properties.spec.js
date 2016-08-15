@@ -98,7 +98,7 @@ test('properties stringify creates a formatted properties string', (t) => {
     t.equal(res.get('hi'), 'there');
     // Back to a normalized properties string
     const propString = res.stringify();
-    t.equal(propString, '# Properties file\nwoo=hoo\nyee=haw\nanswer=42\n#Two\nhi=there');
+    t.equal(propString, '# Properties file\nwoo=hoo\nyee=haw\nanswer=42\n#Two\nhi=there\n');
     t.end();
 });
 
@@ -111,12 +111,12 @@ test('properties save saves a formatted properties string to the filesystem', (t
     t.equal(res.get('hi'), 'there');
     // Back to a normalized properties string
     const propString = res.stringify();
-    t.equal(propString, '# Properties file\nwoo=hoo\nyee=haw\nanswer=42\n#Two\nhi=there');
+    t.equal(propString, '# Properties file\nwoo=hoo\nyee=haw\nanswer=42\n#Two\nhi=there\n');
     // Write to the filesystem
     writeData = null;
     res.save('foo')
     .then(() => {
-        t.equal(writeData, '# Properties file\nwoo=hoo\nyee=haw\nanswer=42\n#Two\nhi=there');
+        t.equal(writeData, '# Properties file\nwoo=hoo\nyee=haw\nanswer=42\n#Two\nhi=there\n');
         t.end();
     })
     .catch((err) => {

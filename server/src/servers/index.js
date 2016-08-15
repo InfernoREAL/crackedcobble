@@ -348,6 +348,8 @@ const createServer = (info) => {
 };
 
 
+// Webservice interface
+
 router.get('/bulk-info', (req, res) => {
     return getServerList()
     .then((serverList) => {

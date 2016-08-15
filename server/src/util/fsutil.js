@@ -1,6 +1,8 @@
 'use strict';
 
 const BPromise = require('bluebird');
+
+const crypto = require('crypto');
 const fs = BPromise.promisifyAll(require('fs'));
 const path = require('path');
 
@@ -46,8 +48,27 @@ const loadJson = (jsonFile) => {
 };
 
 
+/**
+ * Returns the sha1 hash of the specified file
+ */
+const sha1sum = (file) => {
+    return new BPromise( (resolve, reject) => {
+        const inStream = fs.createReadStream(file);
+        const hash = crypto.createHash('sha1');
+        hash.setEncoding('hex');
+        inStream.pipe(hash);
+        inStream.on('end', () => {
+            return resolve(hash.read());
+        });
+        inStream.on('error', err => {
+            return reject(err);
+        });
+    });
+};
+
 module.exports = {
     getDirectoryList,
     isFsError,
-    loadJson
+    loadJson,
+    sha1sum
 };

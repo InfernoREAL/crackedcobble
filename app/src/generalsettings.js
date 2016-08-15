@@ -7,6 +7,7 @@ const GeneralSettings = React.createClass({
     propTypes: {
         name: React.PropTypes.string,
         mcVersion: React.PropTypes.string,
+        mcVersions: React.PropTypes.array,
         port: React.PropTypes.number,
         gameMode: React.PropTypes.number,
         difficulty: React.PropTypes.number,
@@ -35,7 +36,7 @@ const GeneralSettings = React.createClass({
         }
     },
     render() {
-        const { name, mcVersion, port, gameMode, difficulty, hardcore, motd, setState } = this.props;
+        const { name, mcVersion, mcVersions, port, gameMode, difficulty, hardcore, motd, setState } = this.props;
         return (
             <Form horizontal className="tab-form">
                 <FormGroup controlId="name" className={ this.getValidationState('name') }>
@@ -54,10 +55,7 @@ const GeneralSettings = React.createClass({
                             value={ mcVersion }
                             onChange={ (e) => this.onTextChange('mcVersion', e) }
                         >
-                            <option value="1.9.4">1.9.4</option>
-                            <option value="1.9">1.9</option>
-                            <option value="1.8.9">1.8.9</option>
-                            <option value="1.8.8">1.8.8</option>
+                            { mcVersions.map(v => <option key={ v } value={ v }>{ v }</option>) }
                         </FormControl>
                     </Col>
                 </FormGroup>

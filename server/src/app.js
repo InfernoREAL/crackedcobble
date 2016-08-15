@@ -8,6 +8,7 @@ const app = express();
 const server = require('http').createServer(app);
 const sio = require('socket.io')(server);
 
+const assetsRes = require('./assetmanager');
 const serversRes = require('./servers');
 const systemRes = require('./system');
 
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use('/assets', assetsRes.router);
 app.use('/servers', serversRes.router);
 app.use('/system', systemRes.router);
 
@@ -42,7 +44,12 @@ sio.on('connection', (socket) => {
 
 // Monitor system status ever 5 seconds
 systemRes.startMonitor(sio, 5000);
+
+assetsRes.registerSocketIo(sio);
 serversRes.registerSocketIo(sio);
+
+// Keep our minecraft jars up to date
+assetsRes.keepUpToDate();
 
 server.listen(settings.port, () => {
     console.log(`CrackedCobble server started on port ${settings.port}`);

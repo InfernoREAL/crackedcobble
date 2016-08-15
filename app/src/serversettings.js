@@ -19,7 +19,7 @@ const ServerSettings = React.createClass({
             activeTab: 'general',
             general: {
                 name: 'Server 1',
-                mcVersion: '1.9.4',
+                mcVersion: '',
                 port: 25562,
                 gameMode: 0,
                 difficulty: 2,
@@ -90,7 +90,11 @@ const ServerSettings = React.createClass({
         return (
             <Tabs id="server-settings-tabs" activeKey={ activeTab } onSelect={ this.switchTabs }>
                 <Tab eventKey="general" title="General">
-                    <GeneralSettings { ...general } setState={ this.setGeneralState } />
+                    <GeneralSettings
+                        mcVersions={ this.props.serverEdit.mcVersions }
+                        { ...general }
+                        setState={ this.setGeneralState }
+                    />
                 </Tab>
                 <Tab eventKey="advanced" title="Advanced">
                     <AdvancedSettings { ...advanced } setState={ this.setAdvancedState }/>

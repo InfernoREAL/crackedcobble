@@ -32,6 +32,10 @@ const CrackedCobble = React.createClass({
         ws.on('serverAdded', () => {
             return dispatch(actions.refreshServers());
         });
+        // FIXME - do something useful with this
+        ws.on('newMinecraftVersion', (version) => {
+            console.log(`New minecraft version available: ${version}`);
+        });
     },
     componentWillUnmount() {
         clearInterval(this.systemStatusInterval);
@@ -41,6 +45,7 @@ const CrackedCobble = React.createClass({
     },
     onCreate(evt) {
         evt.preventDefault();
+        this.props.dispatch(actions.requestMinecraftVersions());
         this.props.dispatch({ type: 'SHOW_SERVER_CREATE' });
     },
     cancelCreate() {

@@ -2,7 +2,8 @@ const defaultState = {
     isNetworkActive: false,
     serverEdit: {
         active: false,
-        errors: []
+        errors: [],
+        mcVersions: []
     },
     system: {
         status: {
@@ -22,45 +23,59 @@ const updateArray = (ar, idx, item) => {
     return [...ar.slice(0, idx), item, ...ar.slice(idx + 1)];
 };
 
+const debugFilter = ['SYSTEM_STATUS_RECEIVED'];
+
 const reducer = (state = defaultState, action) => {
-    console.log(action);
+    const patch = (oldState, updates) => {
+        return Object.assign({}, oldState, updates);
+    };
+
+    const skipLog = debugFilter.indexOf(action.type) >= 0;
+    if (!skipLog) {
+        console.log(action);
+    }
     let newState = state;
     let idx = -1;
     switch (action.type) {
     case 'SYSTEM_STATUS_RECEIVED':
-        newState = Object.assign({}, state, { system: { status: action.status } });
+        newState = patch(state, { system: { status: action.status } });
         break;
     case 'SERVER_STATUS_RECEIVED':
         idx = state.servers.findIndex((el) => el.id === action.server.id);
-        newState = Object.assign({}, state, { servers: updateArray(state.servers, idx, action.server) });
+        newState = patch(state, { servers: updateArray(state.servers, idx, action.server) });
         break;
     case 'SERVER_BULK_INFO_RECEIVED':
-        newState = Object.assign({}, state, { servers: action.servers });
+        newState = patch(state, { servers: action.servers });
         break;
     case 'SERVER_CREATE_REQUESTED':
-        newState = Object.assign({}, state, { isNetworkActive: true });
+        newState = patch(state, { isNetworkActive: true });
         break;
     case 'SERVER_CREATED':
         if (action.server.error) {
-            newState = Object.assign({}, state, {
+            newState = patch(state, {
                 isNetworkActive: false,
-                serverEdit: { active: true, errors: [action.server.error] }
+                serverEdit: patch(state.serverEdit, { active: true, errors: [action.server.error] })
             });
         } else {
-            newState = Object.assign({}, state, {
+            newState =patch( state, {
                 isNetworkActive: false,
-                serverEdit: { active: false, errors: [] }
+                serverEdit: patch(state.serverEdit, { active: false, errors: [] })
             });
         }
         break;
     case 'SHOW_SERVER_CREATE':
-        newState = Object.assign({}, state, { serverEdit: { active: true, errors: [] } });
+        newState = patch(state, { serverEdit: patch(state.serverEdit, { active: true, errors: [] }) });
         break;
     case 'CANCEL_SERVER_CREATE':
-        newState = Object.assign({}, state, { serverEdit: { active: false, errors: [] } });
+        newState = patch(state, { serverEdit: patch(state.serverEdit, { active: false, errors: [] }) });
+        break;
+    case 'MINECRAFT_VERSIONS_RECEIVED':
+        newState = patch(state, { serverEdit: patch(state.serverEdit, { mcVersions: action.versions }) });
         break;
     }
-    console.log(newState);
+    if (!skipLog) {
+        console.log(newState);
+    }
     return newState;
 };
 
