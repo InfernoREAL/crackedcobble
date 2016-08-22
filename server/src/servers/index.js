@@ -228,6 +228,8 @@ const activateServer = (serverId) => {
                 console.log('listing players due to a new player leaving');
                 server.process.stdin.write('list\n');
             }
+            // Send output line to all remote consoles
+            sio.to(serverId).emit('line', line);
         });
         server.con.on('close', () => {
             server.con = null;
@@ -348,6 +350,22 @@ const createServer = (info) => {
 };
 
 
+/**
+ * Event handler for console input. Writes the input cmd to the specified server's console.
+ *
+ * Event contains:
+ * {
+ *   server: <server id>,
+ *   input: <console input string>
+ * }
+ */
+const onConsoleInput = (evt) => {
+    const server = activeServers[evt.server];
+    if (server) {
+        server.process.stdin.write(`${evt.input}\n`);
+    }
+};
+
 // Webservice interface
 
 router.get('/bulk-info', (req, res) => {
@@ -448,6 +466,7 @@ module.exports = {
     createServer,
     getServerInfo,
     getServerList,
+    onConsoleInput,
     registerSocketIo,
     router
 };

@@ -3,6 +3,7 @@ import React from 'react';
 import { Navbar, Nav, NavItem, Grid, Row, Modal, Glyphicon } from 'react-bootstrap';
 
 import Dashboard from './dashboard';
+import ServerConsole from './serverconsole';
 import ServerSettings from './serversettings';
 
 import actions from './actions';
@@ -14,15 +15,16 @@ const CrackedCobble = React.createClass({
         system: React.PropTypes.object.isRequired,
         servers: React.PropTypes.array.isRequired,
         isNetworkActive: React.PropTypes.bool.isRequired,
-        serverEdit: React.PropTypes.object.isRequired
+        serverEdit: React.PropTypes.object.isRequired,
+        activeConsole: React.PropTypes.string.isRequired,
+        ws: React.PropTypes.object.isRequired
     },
     componentDidMount() {
-        const { dispatch } = this.props;
+        const { dispatch, ws } = this.props;
 
         dispatch(actions.refreshSystem());
         dispatch(actions.refreshServers());
 
-        const ws = window.io();
         ws.on('systemStatus', (status) => {
             return dispatch({ type: 'SYSTEM_STATUS_RECEIVED', status });
         });
@@ -62,7 +64,13 @@ const CrackedCobble = React.createClass({
         console.log(server);
         this.props.dispatch(actions.createServer(server));
     },
-    render() {
+    onConsoleOpen(consoleId) {
+        this.props.dispatch({ type: 'OPEN_CONSOLE', id: consoleId });
+    },
+    onConsoleClose() {
+        this.props.dispatch({ type: 'CLOSE_CONSOLE' });
+    },
+    renderDashboard() {
         const { isNetworkActive, serverEdit, system, servers } = this.props;
         return (
             <Grid fluid>
@@ -84,6 +92,7 @@ const CrackedCobble = React.createClass({
                         servers={ servers }
                         onServerStart={ this.onServerStart }
                         onServerStop={ this.onServerStop }
+                        onConsole={ this.onConsoleOpen }
                     />
                 </Row>
                 <Modal show={ serverEdit.active } onHide={ this.cancelCreate } dialogClassName="wide-modal">
@@ -101,6 +110,20 @@ const CrackedCobble = React.createClass({
                 </Modal>
             </Grid>
         );
+    },
+    renderConsole() {
+        const { activeConsole, servers, ws } = this.props;
+        const server = servers.find((s) => s.id === activeConsole);
+        return (
+            <ServerConsole server={ server } onConsoleClose={ this.onConsoleClose } ws={ ws }/>
+        );
+    },
+    render() {
+        if (this.props.activeConsole) {
+            return this.renderConsole();
+        } else {
+            return this.renderDashboard();
+        }
     }
 });
 

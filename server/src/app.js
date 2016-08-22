@@ -40,6 +40,14 @@ sio.on('connection', (socket) => {
     socket.on('close', () => {
         console.log(`Socket ${socket.id} disconnected.`);
     });
+    // Room support on socket
+    socket.on('join', (server) => {
+        socket.join(server);
+    });
+    socket.on('leave', (server) => {
+        socket.leave(server);
+    });
+    socket.on('consoleInput', serversRes.onConsoleInput);
 });
 
 // Monitor system status ever 5 seconds

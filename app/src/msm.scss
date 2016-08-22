@@ -2,11 +2,13 @@
 html {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+    height: 100%;
 }
 body {
     margin: 0;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
+    height: 100%;
 }
 h1,
 h2,
@@ -43,6 +45,7 @@ img {
 // Site=specific
 #container {
     min-width: 320px;
+    height: 100%;
 }
 .tab-form {
     padding: 15px;
@@ -153,6 +156,43 @@ svg {
     to { transform: scale(1) rotate(360deg); }
 }
 
+// Console formatting
+.btn {
+    line-height: 1.428571429;
+}
+
+.console-container {
+    min-height: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.console-wrap {
+    min-height: 100%;
+    height: 100%;
+    margin: 0 auto -60px 0;
+    padding: 65px 6px 66px 6px;
+}
+
+.console-output {
+    min-height: 100%;
+    height: 100%;
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size: 12px;
+}
+
+.console-input input {
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size: 12px;
+}
+
+.console-footer {
+    height: 60px;
+    padding: 6px;
+}
+
+// Responsive
 @media (max-width: $screen-xs-max) {
     .modal {
         padding: 0;

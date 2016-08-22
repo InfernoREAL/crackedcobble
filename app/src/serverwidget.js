@@ -35,11 +35,12 @@ const ServerWidget = React.createClass({
         numPlayers: React.PropTypes.number.isRequired,
         isActive: React.PropTypes.bool.isRequired,
         onServerStart: React.PropTypes.func.isRequired,
-        onServerStop: React.PropTypes.func.isRequired
+        onServerStop: React.PropTypes.func.isRequired,
+        onConsole: React.PropTypes.func.isRequired
     },
     render() {
         const { id, name, url, motd, mcVersion, flavor, mode, difficulty, hardcore, maxPlayers, numPlayers, isActive,
-            onServerStart, onServerStop } = this.props;
+            onServerStart, onServerStop, onConsole } = this.props;
         return (
             <div className={ 'dash-cell' + (isActive ? ' server-active' : '') }>
                 <div className="dash-cell-header">
@@ -61,16 +62,18 @@ const ServerWidget = React.createClass({
                             { hardcore ? ' HC' : '' }
                         </span>
                     </div>
-                    <div className="dash-cell-action-bar">
-                        { isActive ?
+                    { isActive ?
+                        <div className="dash-cell-action-bar">
                             <Button onClick={ () => onServerStop(id) }><Glyphicon glyph="stop" /></Button>
-                            :
+                            <Button onClick={ () => onConsole(id) }><Glyphicon glyph="console" /></Button>
+                        </div>
+                      :
+                        <div className="dash-cell-action-bar">
                             <Button onClick={ () => onServerStart(id) }><Glyphicon glyph="play" /></Button>
-                        }
-                        <Button><Glyphicon glyph="console" /></Button>
-                        <Button><Glyphicon glyph="pencil" /></Button>
-                        <Button><Glyphicon glyph="trash" /></Button>
-                    </div>
+                            <Button><Glyphicon glyph="pencil" /></Button>
+                            <Button><Glyphicon glyph="trash" /></Button>
+                        </div>
+                    }
                 </div>
             </div>
         );

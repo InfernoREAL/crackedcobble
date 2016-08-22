@@ -13,7 +13,9 @@ const defaultState = {
             diskUsage: 0
         }
     },
-    servers: []
+    servers: [],
+    activeConsole: '',
+    ws: window.io()
 };
 
 const updateArray = (ar, idx, item) => {
@@ -71,6 +73,12 @@ const reducer = (state = defaultState, action) => {
         break;
     case 'MINECRAFT_VERSIONS_RECEIVED':
         newState = patch(state, { serverEdit: patch(state.serverEdit, { mcVersions: action.versions }) });
+        break;
+    case 'OPEN_CONSOLE':
+        newState = patch(state, { activeConsole: action.id });
+        break;
+    case 'CLOSE_CONSOLE':
+        newState = patch(state, { activeConsole: '' });
         break;
     }
     if (!skipLog) {
