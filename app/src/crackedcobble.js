@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Navbar, Nav, NavItem, Grid, Row, Modal, Glyphicon } from 'react-bootstrap';
+import { Navbar, Nav, NavItem, Grid, Row, Modal, Glyphicon, Button } from 'react-bootstrap';
 
 import Dashboard from './dashboard';
 import ServerConsole from './serverconsole';
@@ -19,6 +19,9 @@ const CrackedCobble = React.createClass({
         activeConsole: React.PropTypes.string.isRequired,
         ws: React.PropTypes.object.isRequired
     },
+    getInitialState() {
+        return { showDeleteConfirmDialog: false, server: null };
+    },
     componentDidMount() {
         const { dispatch, ws } = this.props;
 
@@ -32,6 +35,9 @@ const CrackedCobble = React.createClass({
             return dispatch({ type: 'SERVER_STATUS_RECEIVED', server });
         });
         ws.on('serverAdded', () => {
+            return dispatch(actions.refreshServers());
+        });
+        ws.on('serverRemoved', () => {
             return dispatch(actions.refreshServers());
         });
         // FIXME - do something useful with this
@@ -70,8 +76,20 @@ const CrackedCobble = React.createClass({
     onConsoleClose() {
         this.props.dispatch({ type: 'CLOSE_CONSOLE' });
     },
+    requestServerDeletion(server) {
+        this.setState({ showDeleteConfirmDialog: true, server });
+    },
+    hideDeleteConfirmDialog() {
+        this.setState({ showDeleteConfirmDialog: false, server: null });
+    },
+    onServerDelete(server) {
+        console.log(`deleting server ${server}!`);
+        this.props.dispatch(actions.deleteServer(server));
+        this.hideDeleteConfirmDialog();
+    },
     renderDashboard() {
         const { isNetworkActive, serverEdit, system, servers } = this.props;
+        const { showDeleteConfirmDialog, server } = this.state;
         return (
             <Grid fluid>
                 <Row style={ { marginTop: 65 } }>
@@ -93,6 +111,7 @@ const CrackedCobble = React.createClass({
                         onServerStart={ this.onServerStart }
                         onServerStop={ this.onServerStop }
                         onConsole={ this.onConsoleOpen }
+                        onServerDelete={ this.requestServerDeletion }
                     />
                 </Row>
                 <Modal show={ serverEdit.active } onHide={ this.cancelCreate } dialogClassName="wide-modal">
@@ -107,6 +126,18 @@ const CrackedCobble = React.createClass({
                             onCreate={ this.onCreateServer }
                         />
                     </Modal.Body>
+                </Modal>
+                <Modal show={ showDeleteConfirmDialog } onHide={ this.hideDeleteConfirmDialog }>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Delete server...</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                    Permanently delete server '{ server }'?
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={ () => this.onServerDelete(server) }>Yes</Button>
+                        <Button bsStyle="primary" onClick={ this.hideDeleteConfirmDialog }>No</Button>
+                    </Modal.Footer>
                 </Modal>
             </Grid>
         );

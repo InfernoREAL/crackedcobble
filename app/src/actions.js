@@ -53,6 +53,19 @@ const fetchPost = (url, payload) => {
     });
 };
 
+const fetchDelete = (url) => {
+    return fetch(url, { method: 'DELETE' })
+    .then((res) => {
+        if (res.status >= 400) {
+            return res.text()
+            .then((text) => {
+                throw (new Error(text));
+            });
+        }
+        return res.json();
+    });
+};
+
 const refreshSystem = () => {
     return (dispatch) => {
         return fetchGet('/system/status')
@@ -115,6 +128,19 @@ const createServer = (server) => {
     };
 };
 
+const deleteServer = (server) => {
+    return (dispatch) => {
+        return fetchDelete(`/servers/${server}`)
+        .then(() => {
+            return dispatch({ type: 'SERVER_DELETED', server: { id: server } });
+        })
+        .catch((err) => {
+            console.dir(err);
+            return dispatch({ type: 'SERVER_DELETED', server: { error: err.toString() } });
+        });
+    };
+};
+
 const requestMinecraftVersions = () => {
     return (dispatch) => {
         return fetchGet('/assets/minecraft')
@@ -129,6 +155,7 @@ const requestMinecraftVersions = () => {
 
 export default {
     createServer,
+    deleteServer,
     refreshSystem,
     refreshServers,
     requestMinecraftVersions,

@@ -7,6 +7,8 @@ const path = require('path');
 const os = require('os');
 const rl = require('readline');
 
+const rimraf = BPromise.promisify(require('rimraf'));
+
 const express = require('express');
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -366,6 +368,20 @@ const onConsoleInput = (evt) => {
     }
 };
 
+
+/**
+ * Deletes the specified server.
+ */
+const deleteServer = (server) => {
+    console.log('deleting server ' + server);
+    const serverPath = path.join(serverBasePath, server);
+    return rimraf(serverPath)
+    .then(() => {
+        sio.emit('serverRemoved', { id: server });
+    });
+};
+
+
 // Webservice interface
 
 router.get('/bulk-info', (req, res) => {
@@ -425,6 +441,18 @@ router.get('/:id', (req, res) => {
     getServerInfo(req.params.id)
     .then((info) => {
         return res.json(info);
+    })
+    .catch((err) => {
+        console.log('caught:');
+        return res.status(400).send(err.toString());
+    });
+});
+
+
+router.delete('/:id', (req, res) => {
+    deleteServer(req.params.id)
+    .then(() => {
+        return res.json({});
     })
     .catch((err) => {
         console.log('caught:');

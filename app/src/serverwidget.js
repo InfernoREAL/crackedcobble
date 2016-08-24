@@ -36,11 +36,12 @@ const ServerWidget = React.createClass({
         isActive: React.PropTypes.bool.isRequired,
         onServerStart: React.PropTypes.func.isRequired,
         onServerStop: React.PropTypes.func.isRequired,
-        onConsole: React.PropTypes.func.isRequired
+        onConsole: React.PropTypes.func.isRequired,
+        onServerDelete: React.PropTypes.func.isRequired
     },
     render() {
         const { id, name, url, motd, mcVersion, flavor, mode, difficulty, hardcore, maxPlayers, numPlayers, isActive,
-            onServerStart, onServerStop, onConsole } = this.props;
+            onServerStart, onServerStop, onConsole, onServerDelete } = this.props;
         return (
             <div className={ 'dash-cell' + (isActive ? ' server-active' : '') }>
                 <div className="dash-cell-header">
@@ -71,7 +72,7 @@ const ServerWidget = React.createClass({
                         <div className="dash-cell-action-bar">
                             <Button onClick={ () => onServerStart(id) }><Glyphicon glyph="play" /></Button>
                             <Button><Glyphicon glyph="pencil" /></Button>
-                            <Button><Glyphicon glyph="trash" /></Button>
+                            <Button onClick={ () => onServerDelete(id) }><Glyphicon glyph="trash" /></Button>
                         </div>
                     }
                 </div>
