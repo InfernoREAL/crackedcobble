@@ -73,7 +73,7 @@ const refreshSystem = () => {
             return dispatch({ type: 'SYSTEM_STATUS_RECEIVED', status });
         })
         .catch((err) => {
-            console.log(err);
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
         });
     };
 };
@@ -85,7 +85,7 @@ const refreshServers = () => {
             return dispatch({ type: 'SERVER_BULK_INFO_RECEIVED', servers });
         })
         .catch((err) => {
-            console.log(err);
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
         });
     };
 };
@@ -97,7 +97,7 @@ const startServer = (serverId) => {
             return dispatch(refreshServers());
         })
         .catch((err) => {
-            console.log(err);
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
         });
     };
 };
@@ -109,7 +109,7 @@ const stopServer = (serverId) => {
             return dispatch(refreshServers());
         })
         .catch((err) => {
-            console.log(err);
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
         });
     };
 };
@@ -122,7 +122,6 @@ const createServer = (server) => {
             return dispatch({ type: 'SERVER_CREATED', server });
         })
         .catch((err) => {
-            console.dir(err);
             return dispatch({ type: 'SERVER_CREATED', server: { error: err.toString() } });
         });
     };
@@ -135,8 +134,7 @@ const deleteServer = (server) => {
             return dispatch({ type: 'SERVER_DELETED', server: { id: server } });
         })
         .catch((err) => {
-            console.dir(err);
-            return dispatch({ type: 'SERVER_DELETED', server: { error: err.toString() } });
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
         });
     };
 };
@@ -149,6 +147,7 @@ const requestMinecraftVersions = () => {
         })
         .catch((err) => {
             console.log(err);
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
         });
     };
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Navbar, Nav, NavItem, Grid, Row, Modal, Glyphicon, Button } from 'react-bootstrap';
+import { Navbar, Nav, NavItem, Grid, Row, Modal, Glyphicon, Button, Overlay, Collapse } from 'react-bootstrap';
 
 import Dashboard from './dashboard';
 import ServerConsole from './serverconsole';
@@ -17,7 +17,8 @@ const CrackedCobble = React.createClass({
         isNetworkActive: React.PropTypes.bool.isRequired,
         serverEdit: React.PropTypes.object.isRequired,
         activeConsole: React.PropTypes.string.isRequired,
-        ws: React.PropTypes.object.isRequired
+        ws: React.PropTypes.object.isRequired,
+        errors: React.PropTypes.array.isRequired
     },
     getInitialState() {
         return { showDeleteConfirmDialog: false, server: null };
@@ -40,6 +41,9 @@ const CrackedCobble = React.createClass({
         ws.on('serverRemoved', () => {
             return dispatch(actions.refreshServers());
         });
+        ws.on('serverError', (err) => {
+            return dispatch({ type: 'ADD_ERROR', error: err });
+        });
         // FIXME - do something useful with this
         ws.on('newMinecraftVersion', (version) => {
             console.log(`New minecraft version available: ${version}`);
@@ -50,6 +54,9 @@ const CrackedCobble = React.createClass({
         clearInterval(this.serverStatusInterval);
         this.systemStatusInterval = null;
         this.serverStatusInterval = null;
+    },
+    onErrorHide() {
+        this.props.dispatch({ type: 'CLEAR_ERROR' });
     },
     onCreate(evt) {
         evt.preventDefault();
@@ -88,7 +95,7 @@ const CrackedCobble = React.createClass({
         this.hideDeleteConfirmDialog();
     },
     renderDashboard() {
-        const { isNetworkActive, serverEdit, system, servers } = this.props;
+        const { isNetworkActive, serverEdit, system, servers, errors } = this.props;
         const { showDeleteConfirmDialog, server } = this.state;
         return (
             <Grid fluid>
@@ -139,6 +146,19 @@ const CrackedCobble = React.createClass({
                         <Button bsStyle="primary" onClick={ this.hideDeleteConfirmDialog }>No</Button>
                     </Modal.Footer>
                 </Modal>
+
+                <Overlay
+                    animation={ Collapse }
+                    show={ errors.length > 0 }
+                    rootClose={ true }
+                    onHide={ this.onErrorHide }
+                >
+                    <div key="toast" className="error-toast">
+                        <div className="error-message alert-danger">
+                            { errors.map((e, idx) => <p key={ `e${idx}` }>{ e }</p>) }
+                        </div>
+                    </div>
+                </Overlay>
             </Grid>
         );
     },

@@ -207,6 +207,7 @@ const activateServer = (serverId) => {
         server.process.on('error', (err) => {
             console.log(`An error occured: ${err.toString()}`);
             rmServer();
+            sio.emit('serverError', `Error from server '${info.name}': ${err.toString()}`);
             sendStatusUpdate();
         });
 

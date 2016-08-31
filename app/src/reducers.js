@@ -15,7 +15,8 @@ const defaultState = {
     },
     servers: [],
     activeConsole: '',
-    ws: window.io()
+    ws: window.io(),
+    errors: []
 };
 
 const updateArray = (ar, idx, item) => {
@@ -79,6 +80,16 @@ const reducer = (state = defaultState, action) => {
         break;
     case 'CLOSE_CONSOLE':
         newState = patch(state, { activeConsole: '' });
+        break;
+    case 'ADD_ERROR':
+        if (Array.isArray(action.error)) {
+            newState = patch(state, { errors: [...action.error, ...state.errors].slice(-10) });
+        } else {
+            newState = patch(state, { errors: [action.error, ...state.errors].slice(-10) });
+        }
+        break;
+    case 'CLEAR_ERROR':
+        newState = patch(state, { errors: [] });
         break;
     }
     if (!skipLog) {
