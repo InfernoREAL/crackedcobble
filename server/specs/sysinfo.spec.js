@@ -8,24 +8,13 @@ const BPromise = require('bluebird');
 let returnBadData = false;
 const conexecStub = {
     conexec(cmd) {
-        if (cmd.indexOf('free') === 0) {
+        if (cmd.indexOf('df') === 0) {
             if (returnBadData) {
+                console.log('returning bad data!!!!!!!!!!!!!!!!!!111');
                 returnBadData = false;
                 return BPromise.resolve({ stdout: ['bad'] });
             }
-            return BPromise.resolve({
-                stdout: [
-                    '             total       used       free     shared    buffers     cached',
-                    'Mem:      20459460    8980252   11479208      78808    1384640    4367156',
-                    '-/+ buffers/cache:    3228456   17231004',
-                    'Swap:      7999484          0    7999484'
-                ]
-            });
-        } else if (cmd.indexOf('df') === 0) {
-            if (returnBadData) {
-                returnBadData = false;
-                return BPromise.resolve({ stdout: ['bad'] });
-            }
+            console.log('returning good data!!!!!!!!!!!!!!!!!!111');
             return BPromise.resolve({
                 stdout: [
                     'Filesystem     1K-blocks      Used Available Use% Mounted on',
@@ -38,7 +27,27 @@ const conexecStub = {
     }
 };
 
-const sysinfo = proxyquire('../src/util/sysinfo', { './conexec': conexecStub } );
+const fsStub = {
+    readFile(file, callback) {
+        if (returnBadData) {
+            return callback(null,
+                'Buffers:         2443248 kB\n' +
+                'Cached:          9782324 kB\n' +
+                'SwapCached:           84 kB\n'
+            );
+        }
+        return callback(null,
+            'MemTotal:       20458460 kB\n' +
+            'MemFree:          760168 kB\n' +
+            'MemAvailable:   15611576 kB\n' +
+            'Buffers:         2443248 kB\n' +
+            'Cached:          9782324 kB\n' +
+            'SwapCached:           84 kB\n'
+        );
+    }
+};
+
+const sysinfo = proxyquire('../src/util/sysinfo', { './conexec': conexecStub, 'fs': fsStub } );
 
 
 test('=== sysinfo setup', (t) => {
@@ -49,9 +58,9 @@ test('=== sysinfo setup', (t) => {
 test('getMemoryInfo returns appropriate information', (t) => {
     sysinfo.getMemoryInfo()
     .then((info) => {
-        t.equal(info.total, 20459460);
-        t.equal(info.used, 3228456);
-        t.equal(info.free, 17231004);
+        t.equal(info.total, 20458460);
+        t.equal(info.used, 4846884);
+        t.equal(info.free, 15611576);
         t.end();
     })
     .catch((err) => {
@@ -75,6 +84,7 @@ test('getMemoryInfo fails gracefully on bad data', (t) => {
 
 
 test('getDiskUsage returns appropriate information', (t) => {
+    returnBadData = false;
     sysinfo.getDiskUsage()
     .then((info) => {
         t.equal(info.size, 961301832);
@@ -90,7 +100,7 @@ test('getDiskUsage returns appropriate information', (t) => {
 });
 
 
-test('getMemoryInfo fails gracefully on bad data', (t) => {
+test('getDiskUsage fails gracefully on bad data', (t) => {
     returnBadData = true;
     sysinfo.getDiskUsage()
     .then((info) => {
