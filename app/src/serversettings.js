@@ -19,7 +19,7 @@ const ServerSettings = React.createClass({
             activeTab: 'general',
             general: {
                 name: 'Server 1',
-                mcVersion: '',
+                mcVersion: serverEdit.mcVersions[0] || '',
                 port: 25562,
                 gameMode: 0,
                 difficulty: 2,
@@ -49,7 +49,12 @@ const ServerSettings = React.createClass({
     },
     componentWillReceiveProps(nextProps) {
         if (this.props.serverEdit !== nextProps.serverEdit) {
-            this.setState({ errors: nextProps.serverEdit.errors });
+            const general = Object.assign({}, this.state.general);
+            // Specify a default server version is the list of versions has been provided
+            if (general.mcVersion === '' && nextProps.serverEdit.mcVersions.length > 0) {
+                general.mcVersion = nextProps.serverEdit.mcVersions[0];
+            }
+            this.setState({ general, errors: nextProps.serverEdit.errors });
         }
     },
     switchTabs(key) {

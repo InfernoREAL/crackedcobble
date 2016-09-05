@@ -33,6 +33,7 @@ const ServerConsole = React.createClass({
         const { lines } = this.state;
         // Limit line logging to 1000 lines
         this.setState({ lines: [...lines.slice(-999), line] });
+        this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
     },
     onSubmit(evt) {
         evt.preventDefault();
@@ -57,7 +58,7 @@ const ServerConsole = React.createClass({
                             </NavItem>
                         </Nav>
                     </Navbar>
-                    <Well className="console-output">
+                    <Well className="console-output" ref={ (ref) => this.consoleOutput = ReactDOM.findDOMNode(ref) }>
                         { lines.map((l, idx) => <div key={ `l${idx}` }>{ l }</div>) }
                     </Well>
                 </div>

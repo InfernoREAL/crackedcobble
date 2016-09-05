@@ -121,7 +121,12 @@ const CrackedCobble = React.createClass({
                         onServerDelete={ this.requestServerDeletion }
                     />
                 </Row>
-                <Modal show={ serverEdit.active } onHide={ this.cancelCreate } dialogClassName="wide-modal">
+                <Modal
+                    show={ serverEdit.active }
+                    onHide={ this.cancelCreate }
+                    dialogClassName="wide-modal"
+                    backdrop="static"
+                >
                     <Modal.Header closeButton>
                         <Modal.Title>Create Server...</Modal.Title>
                     </Modal.Header>
@@ -134,7 +139,7 @@ const CrackedCobble = React.createClass({
                         />
                     </Modal.Body>
                 </Modal>
-                <Modal show={ showDeleteConfirmDialog } onHide={ this.hideDeleteConfirmDialog }>
+                <Modal show={ showDeleteConfirmDialog } onHide={ this.hideDeleteConfirmDialog } backdrop="static">
                     <Modal.Header closeButton>
                         <Modal.Title>Delete server...</Modal.Title>
                     </Modal.Header>
