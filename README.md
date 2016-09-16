@@ -19,13 +19,13 @@ instances and provides simple start/stop control.
 * Start/stop control of Minecraft server instances (vanilla-only)
 * Status monitoring of server health (CPU load, memory usage, disk usage, etc.)
 * Minecraft server instance creation (vanilla)
+* Server instance modification (vanilla)
 * Interactive console for a server instance launched from dashboard (for entering server op commands, etc.)
 
 
 ## Planned features
 
 * Minecraft server instance creation with automatic mod installation (forge-based)
-* Server instance modification
 * Map/world reset option
 * Ability to create server with specified map
 
