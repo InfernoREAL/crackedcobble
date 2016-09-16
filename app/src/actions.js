@@ -127,6 +127,19 @@ const createServer = (server) => {
     };
 };
 
+const updateServer = (server) => {
+    return (dispatch) => {
+        dispatch({ type: 'SERVER_UPDATE_REQUESTED' });
+        return fetchPut(`/servers/${server.general.id}`, server)
+        .then((server) => {
+            return dispatch({ type: 'SERVER_UPDATED', server });
+        })
+        .catch((err) => {
+            return dispatch({ type: 'SERVER_UPDATED', server: { error: err.toString() } });
+        });
+    };
+};
+
 const deleteServer = (server) => {
     return (dispatch) => {
         return fetchDelete(`/servers/${server}`)
@@ -154,6 +167,7 @@ const requestMinecraftVersions = () => {
 
 export default {
     createServer,
+    updateServer,
     deleteServer,
     refreshSystem,
     refreshServers,

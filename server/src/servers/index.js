@@ -110,9 +110,25 @@ const getServerStatus = (serverId) => {
  *   motd: 'message of the day for the server',
  *   mode: numeric game mode 0-3,
  *   difficulty: numeric game difficulty 0-4,
+ *   hardcore: true if hardcore mode set
  *   maxPlayers: max number of players allowed on server,
  *   numPlayers: number of players active on server,
  *   isActive: true if server is started, false otherwise
+ *   seed: the world seed if set,
+ *   javaArgs: custom arguments to pass on server startup
+ *   onlineMode: true if online mode is set
+ *   announceAchievements: true if player achievements are to be announced,
+ *   enableSnooper: true snooper is enabled,
+ *   spawnAnimals: true to spawn animals,
+ *   spawnMonsters: true to spawn monsters,
+ *   spawnNpcs: true to spawn NPCs,
+ *   generateStructures: true to generate structures,
+ *   allowFlight: true to allow flight,
+ *   allowNether: true to all the nether,
+ *   pvp: true if player vs player,
+ *   bonusChest: true if a bonus chest is generated on startup,
+ *   enableCommandBlock: false,
+ *   levelType: the level type to create
  * }
  *
  * Results are returned via Promise fulfillment.
@@ -136,6 +152,27 @@ const getServerInfo = (serverId) => {
         info.hardcore = serverProps.get('hardcore') === 'true' ? true : false;
         info.maxPlayers = parseInt(serverProps.get('max-players'), 10);
         info.numPlayers = 0;
+        info.seed = serverProps.get('level-seed');
+        info.onlineMode = serverProps.get('online-mode') === 'true' ? true : false;
+        info.announceAchievements = serverProps.get('announce-player-achievements') === 'true' ? true : false;
+        info.enableSnooper = serverProps.get('snooper-enabled') === 'true' ? true : false;
+        info.spawnAnimals = serverProps.get('spawn-animals') === 'true' ? true : false;
+        info.spawnMonsters = serverProps.get('spawn-monsters') === 'true' ? true : false;
+        info.spawnNpcs = serverProps.get('spawn-npcs') === 'true' ? true : false;
+        info.generateStructures = serverProps.get('generate-structures') === 'true' ? true : false;
+        info.allowFlight = serverProps.get('allow-flight') === 'true' ? true : false;
+        info.allowNether = serverProps.get('allow-nether') === 'true' ? true : false;
+        info.pvp = serverProps.get('pvp') === 'true' ? true : false;
+        info.enableCommandBlock = serverProps.get('enable-command-block') === 'true' ? true : false;
+        info.levelType = serverProps.get('level-type');
+        info.javaArgs = [];
+        info.bonusChest = false;
+        if (info.startup) {
+            info.javaArgs = info.startup.javaArgs || [];
+            if (info.startup.serverArgs) {
+                info.bonusChest = (info.startup.serverArgs.indexOf('--bonusChest') >= 0);
+            }
+        }
         info.isActive = activeServers.hasOwnProperty(serverId);
         if (info.isActive) {
             return getServerStatus(serverId)
@@ -267,25 +304,25 @@ const nameToId = (name) => {
 const updateServerProperties = (propFile, info) => {
     const general = info.general;
     const advanced = info.advanced;
-    propFile.addProperty('allow-nether', advanced.allowNether);
-    propFile.addProperty('gamemode', general.gameMode);
-    propFile.addProperty('difficulty', general.difficulty);
-    propFile.addProperty('hardcore', general.hardcore);
-    propFile.addProperty('spawn-monsters', advanced.spawnMonsters);
-    propFile.addProperty('announce-player-achievements', advanced.announceAchievements);
-    propFile.addProperty('pvp', advanced.pvp);
-    propFile.addProperty('snooper-enabled', advanced.enableSnooper);
-    propFile.addProperty('level-type', advanced.levelType);
-    propFile.addProperty('enable-command-block', advanced.enableCommandBlock);
-    propFile.addProperty('max-players', advanced.playerLimit);
-    propFile.addProperty('server-port', general.port);
-    propFile.addProperty('spawn-npcs', advanced.spawnNpcs);
-    propFile.addProperty('allow-flight', advanced.allowFlight);
-    propFile.addProperty('spawn-animals', advanced.spawnAnimals);
-    propFile.addProperty('generate-structures', advanced.generateStructures);
-    propFile.addProperty('online-mode', advanced.onlineMode);
-    propFile.addProperty('level-seed', advanced.seed);
-    propFile.addProperty('motd', general.motd);
+    propFile.set('allow-nether', advanced.allowNether);
+    propFile.set('gamemode', general.gameMode);
+    propFile.set('difficulty', general.difficulty);
+    propFile.set('hardcore', general.hardcore);
+    propFile.set('spawn-monsters', advanced.spawnMonsters);
+    propFile.set('announce-player-achievements', advanced.announceAchievements);
+    propFile.set('pvp', advanced.pvp);
+    propFile.set('snooper-enabled', advanced.enableSnooper);
+    propFile.set('level-type', advanced.levelType);
+    propFile.set('enable-command-block', advanced.enableCommandBlock);
+    propFile.set('max-players', advanced.playerLimit);
+    propFile.set('server-port', general.port);
+    propFile.set('spawn-npcs', advanced.spawnNpcs);
+    propFile.set('allow-flight', advanced.allowFlight);
+    propFile.set('spawn-animals', advanced.spawnAnimals);
+    propFile.set('generate-structures', advanced.generateStructures);
+    propFile.set('online-mode', advanced.onlineMode);
+    propFile.set('level-seed', advanced.seed);
+    propFile.set('motd', general.motd);
 };
 
 
@@ -344,6 +381,62 @@ const createServer = (info) => {
         getServerInfo(serverId)
         .then((info) => {
             sio.emit('serverAdded', info);
+        })
+        .catch((err) => {
+            console.log(`Unable to get server status: ${err.toString()}`);
+        });
+        return null;
+    });
+};
+
+
+/**
+ * Updates an existing server
+ */
+const updateServer = (info) => {
+    console.log('Update server', info);
+    const serverId = info.general.id;
+    const serverPath = path.join(serverBasePath, serverId);
+    const serverPropertiesPath = path.join(serverPath, serverPropertiesFile);
+    const serverControlPath = path.join(serverPath, serverControlFile);
+    // Update server.properties
+    return props.load(serverPropertiesPath)
+    .then((propFile) => {
+        updateServerProperties(propFile, info);
+        return propFile.save(serverPropertiesPath);
+    })
+    .then(() => {
+        return fsutil.loadJson(serverControlPath);
+    })
+    .then((config) => {
+        // Update crackedcobble.json
+        config.name = info.general.name;
+        config.mcVersion =  info.general.mcVersion;
+        config.host = os.hostname();
+        config.flavor = 'vanilla';
+        config.startup = config.startup || {};
+        config.startup.serverArgs = config.startup.serverArgs || [];
+        // Put in custom args if provided
+        delete config.startup.javaArgs;
+        const javaArgs = info.advanced.javaArgs.filter(a => a.trim().length > 0);
+        if (javaArgs.length > 0) {
+            config.startup.javaArgs = javaArgs;
+        }
+        // Tell minecraft to generate the bonus chest if desired
+        if (info.advanced.bonusChest) {
+            if (config.startup.serverArgs.indexOf('--bonusChest') < 0) {
+                config.startup.serverArgs.push('--bonusChest');
+            }
+        } else {
+            config.startup.serverArgs = config.startup.serverArgs.filter((x) => x !== '--bonusChest');
+        }
+        return fs.writeFile(serverControlPath, JSON.stringify(config, 0, 4));
+    })
+    .then(() => {
+        // Server has been updated, notify interested parties asynchronously
+        getServerInfo(serverId)
+        .then((info) => {
+            sio.emit('serverUpdated', info);
         })
         .catch((err) => {
             console.log(`Unable to get server status: ${err.toString()}`);
@@ -444,7 +537,17 @@ router.get('/:id', (req, res) => {
         return res.json(info);
     })
     .catch((err) => {
-        console.log('caught:');
+        return res.status(400).send(err.toString());
+    });
+});
+
+
+router.put('/:id', (req, res) => {
+    updateServer(req.body)
+    .then(() => {
+        return res.json({});
+    })
+    .catch((err) => {
         return res.status(400).send(err.toString());
     });
 });
@@ -456,7 +559,6 @@ router.delete('/:id', (req, res) => {
         return res.json({});
     })
     .catch((err) => {
-        console.log('caught:');
         return res.status(400).send(err.toString());
     });
 });

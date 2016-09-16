@@ -38,6 +38,9 @@ const CrackedCobble = React.createClass({
         ws.on('serverAdded', () => {
             return dispatch(actions.refreshServers());
         });
+        ws.on('serverUpdated', () => {
+            return dispatch(actions.refreshServers());
+        });
         ws.on('serverRemoved', () => {
             return dispatch(actions.refreshServers());
         });
@@ -77,6 +80,11 @@ const CrackedCobble = React.createClass({
         console.log(server);
         this.props.dispatch(actions.createServer(server));
     },
+    onUpdateServer(server) {
+        console.log('updating server...');
+        console.log(server);
+        this.props.dispatch(actions.updateServer(server));
+    },
     onConsoleOpen(consoleId) {
         this.props.dispatch({ type: 'OPEN_CONSOLE', id: consoleId });
     },
@@ -93,6 +101,11 @@ const CrackedCobble = React.createClass({
         console.log(`deleting server ${server}!`);
         this.props.dispatch(actions.deleteServer(server));
         this.hideDeleteConfirmDialog();
+    },
+    onServerEdit(server) {
+        console.log(`editing server ${server}`);
+        this.props.dispatch(actions.requestMinecraftVersions());
+        this.props.dispatch({ type: 'SHOW_SERVER_EDIT', server });
     },
     renderDashboard() {
         const { isNetworkActive, serverEdit, system, servers, errors } = this.props;
@@ -119,6 +132,7 @@ const CrackedCobble = React.createClass({
                         onServerStop={ this.onServerStop }
                         onConsole={ this.onConsoleOpen }
                         onServerDelete={ this.requestServerDeletion }
+                        onServerEdit={ this.onServerEdit }
                     />
                 </Row>
                 <Modal
@@ -133,9 +147,11 @@ const CrackedCobble = React.createClass({
                     <Modal.Body>
                         <ServerSettings
                             isNetworkActive={ isNetworkActive }
-                            serverEdit= { serverEdit }
+                            serverEdit={ serverEdit }
+                            servers={ servers }
                             onClose={ this.cancelCreate }
                             onCreate={ this.onCreateServer }
+                            onUpdate={ this.onUpdateServer }
                         />
                     </Modal.Body>
                 </Modal>

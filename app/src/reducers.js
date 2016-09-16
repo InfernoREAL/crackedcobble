@@ -2,6 +2,7 @@ const defaultState = {
     isNetworkActive: false,
     serverEdit: {
         active: false,
+        serverId: null,
         errors: [],
         mcVersions: []
     },
@@ -66,8 +67,28 @@ const reducer = (state = defaultState, action) => {
             });
         }
         break;
+    case 'SERVER_UPDATE_REQUESTED':
+        newState = patch(state, { isNetworkActive: true });
+        break;
+    case 'SERVER_UPDATED':
+        if (action.server.error) {
+            newState = patch(state, {
+                isNetworkActive: false,
+                serverEdit: patch(state.serverEdit, { active: true, errors: [action.server.error] })
+            });
+        } else {
+            newState =patch( state, {
+                isNetworkActive: false,
+                serverEdit: patch(state.serverEdit, { active: false, errors: [] })
+            });
+        }
+        break;
     case 'SHOW_SERVER_CREATE':
         newState = patch(state, { serverEdit: patch(state.serverEdit, { active: true, errors: [] }) });
+        break;
+    case 'SHOW_SERVER_EDIT':
+        newState = patch(state, { serverEdit: patch(state.serverEdit, {
+            active: true, errors: [], serverId: action.server }) });
         break;
     case 'CANCEL_SERVER_CREATE':
         newState = patch(state, { serverEdit: patch(state.serverEdit, { active: false, errors: [] }) });

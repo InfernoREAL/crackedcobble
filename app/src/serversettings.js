@@ -10,42 +10,84 @@ const ServerSettings = React.createClass({
     propTypes: {
         onClose: React.PropTypes.func.isRequired,
         onCreate: React.PropTypes.func.isRequired,
+        onUpdate: React.PropTypes.func.isRequired,
         isNetworkActive: React.PropTypes.bool.isRequired,
-        serverEdit: React.PropTypes.object.isRequired
+        serverEdit: React.PropTypes.object.isRequired,
+        servers: React.PropTypes.array.isRequired
     },
     getInitialState() {
-        const { serverEdit } = this.props;
-        return {
-            activeTab: 'general',
-            general: {
-                name: 'Server 1',
-                mcVersion: serverEdit.mcVersions[0] || '',
-                port: 25562,
-                gameMode: 0,
-                difficulty: 2,
-                hardcore: false,
-                motd: 'Welcome to Server 1'
-            },
-            advanced: {
-                seed: '',
-                playerLimit: 20,
-                javaArgs: [],
-                onlineMode: true,
-                announceAchievements: true,
-                enableSnooper: true,
-                spawnAnimals: true,
-                spawnMonsters: true,
-                spawnNpcs: true,
-                generateStructures: true,
-                allowFlight: false,
-                allowNether: true,
-                pvp: true,
-                bonusChest: false,
-                enableCommandBlock: false,
-                levelType: 'DEFAULT'
-            },
-            errors: serverEdit.errors || []
-        };
+        const { serverEdit, servers } = this.props;
+        let server = null;
+        if (serverEdit.serverId) {
+            server = servers.find((s) => s.id === serverEdit.serverId);
+        }
+        if (server) {
+            return {
+                activeTab: 'general',
+                general: {
+                    id: server.id,
+                    name: server.name,
+                    mcVersion: server.mcVersion,
+                    port: server.port,
+                    gameMode: server.mode,
+                    difficulty: server.difficulty,
+                    hardcore: server.hardcore,
+                    motd: server.motd
+                },
+                advanced: {
+                    seed: server.seed,
+                    playerLimit: server.maxPlayers,
+                    javaArgs: server.javaArgs,
+                    onlineMode: server.onlineMode,
+                    announceAchievements: server.announceAchievements,
+                    enableSnooper: server.enableSnooper,
+                    spawnAnimals: server.spawnAnimals,
+                    spawnMonsters: server.spawnMonsters,
+                    spawnNpcs: server.spawnNpcs,
+                    generateStructures: server.generateStructures,
+                    allowFlight: server.allowFlight,
+                    allowNether: server.allowNether,
+                    pvp: server.pvp,
+                    bonusChest: server.bonusChest,
+                    enableCommandBlock: server.enableCommandBlock,
+                    levelType: server.levelType
+                },
+                errors: serverEdit.errors || []
+            };
+        } else {
+            return {
+                activeTab: 'general',
+                general: {
+                    id: null,
+                    name: 'Server 1',
+                    mcVersion: serverEdit.mcVersions[0] || '',
+                    port: 25562,
+                    gameMode: 0,
+                    difficulty: 2,
+                    hardcore: false,
+                    motd: 'Welcome to Server 1'
+                },
+                advanced: {
+                    seed: '',
+                    playerLimit: 20,
+                    javaArgs: [],
+                    onlineMode: true,
+                    announceAchievements: true,
+                    enableSnooper: true,
+                    spawnAnimals: true,
+                    spawnMonsters: true,
+                    spawnNpcs: true,
+                    generateStructures: true,
+                    allowFlight: false,
+                    allowNether: true,
+                    pvp: true,
+                    bonusChest: false,
+                    enableCommandBlock: false,
+                    levelType: 'DEFAULT'
+                },
+                errors: serverEdit.errors || []
+            };
+        }
     },
     componentWillReceiveProps(nextProps) {
         if (this.props.serverEdit !== nextProps.serverEdit) {
@@ -72,6 +114,13 @@ const ServerSettings = React.createClass({
             return this.setState({ errors });
         }
         this.props.onCreate({ general: this.state.general, advanced: this.state.advanced });
+    },
+    updateServer() {
+        const errors = this.validateSettings();
+        if (errors.length) {
+            return this.setState({ errors });
+        }
+        this.props.onUpdate({ general: this.state.general, advanced: this.state.advanced });
     },
     validateSettings() {
         const errors = [];
@@ -112,7 +161,7 @@ const ServerSettings = React.createClass({
     },
     render() {
         const { isNetworkActive, onClose } = this.props;
-        const { errors } = this.state;
+        const { errors, general } = this.state;
         const errorList = errors.map( (e, i) => <li key={ i }>{ e }</li>);
         return (
             <div>
@@ -141,7 +190,10 @@ const ServerSettings = React.createClass({
                             </Col>
                             <Col xs={ 5 } sm={ 2 }>
                                 <ButtonGroup vertical block>
-                                    <Button bsStyle="primary" onClick={ this.createServer }>Create</Button>
+                                    <Button
+                                        bsStyle="primary"
+                                        onClick={ general.id ? this.updateServer : this.createServer }
+                                    >{ general.id ? 'Update' : 'Create' }</Button>
                                 </ButtonGroup>
                             </Col>
                         </div>
