@@ -103,6 +103,12 @@ svg {
 .dash-cell-action-bar>button {
     margin-right: 8px;
 }
+.single-line {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-right: 8px;
+}
 
 // Modififiers for server widget
 .server-active {

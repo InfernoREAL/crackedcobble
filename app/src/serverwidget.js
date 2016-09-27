@@ -47,7 +47,7 @@ const ServerWidget = React.createClass({
             <div className={ 'dash-cell' + (isActive ? ' server-active' : '') }>
                 <div className="dash-cell-header">
                     <span className="pull-right">{ url }</span>
-                    <span>{ name }</span>
+                    <span><div className="single-line" title={ name }>{ name }</div></span>
                 </div>
                 <div className="dash-cell-content">
                     <div className="dash-cell-row">{ motd }</div>
