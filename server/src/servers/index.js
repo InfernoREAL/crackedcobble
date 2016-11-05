@@ -14,6 +14,7 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 const fsutil = require('../util/fsutil');
 const props = require('../util/properties');
+const nat = require('../assetmanager/nat');
 
 // Settings
 const settings = require('../settings.js');
@@ -105,6 +106,7 @@ const getServerStatus = (serverId) => {
  *   mcVersion: 'minecraft version`,
  *   host: 'hostname or IP of server',
  *   flavor: 'type of server [ vanillia | forge ]',
+ *   portForward: true if server is to be forward through router to the internet,
  *   id: 'server_id',
  *   port: numeric port the server is running on,
  *   motd: 'message of the day for the server',
@@ -195,8 +197,13 @@ const getServerInfo = (serverId) => {
  */
 const activateServer = (serverId) => {
     const serverPath = path.join(serverBasePath, serverId);
-    return fsutil.loadJson(path.join(serverPath, serverControlFile))
-    .then((info) => {
+    return BPromise.all([
+        fsutil.loadJson(path.join(serverPath, serverControlFile)),
+        props.load(path.join(serverPath, serverPropertiesFile))
+    ])
+    .then((res) => {
+        const info = res[0];
+        const serverProps = res[1];
         // Fill in any command parameters that are not specified
         const startup = Object.assign({}, {
             command: 'java',
@@ -210,6 +217,7 @@ const activateServer = (serverId) => {
         const server = {
             info,
             numPlayers: 0,
+            port: parseInt(serverProps.get('server-port'), 10),
             process: cp.spawn(startup.command, cmdLine, { cwd: serverPath })
         };
         console.log(`Server ${serverId} started with pid ${server.process.pid}`);
@@ -274,6 +282,17 @@ const activateServer = (serverId) => {
         server.con.on('close', () => {
             server.con = null;
         });
+
+        // If portForwarding is selected, try to open the port on the router
+        if (info.portForward) {
+            const port = serverProps.get('server-port');
+            nat.openPort(port, serverId)
+            .catch((err) => {
+                const errMsg = `Unable to open internet port ${port} for server ${serverId}: ${err.toString()}`;
+                console.log(errMsg);
+                sio.emit('serverError', errMsg);
+            });
+        }
     });
 };
 
@@ -286,6 +305,10 @@ const deactivateServer = (serverId) => {
     if (server) {
         server.process.stdin.write('\nstop\n');
     }
+    nat.closePort(server.port)
+    .catch((err) => {
+        console.log(`Error unmapping port ${server.port} for server ${serverId}: ${err.toString()}`);
+    });
     return BPromise.resolve();
 };
 
@@ -363,6 +386,7 @@ const createServer = (info) => {
             mcVersion: info.general.mcVersion,
             host: os.hostname(),
             flavor: 'vanilla',
+            portForward: info.general.portForward,
             startup: {}
         };
         // Put in custom args if provided
@@ -414,6 +438,7 @@ const updateServer = (info) => {
         config.mcVersion =  info.general.mcVersion;
         config.host = os.hostname();
         config.flavor = 'vanilla';
+        config.portForward = info.general.portForward;
         config.startup = config.startup || {};
         config.startup.serverArgs = config.startup.serverArgs || [];
         // Put in custom args if provided

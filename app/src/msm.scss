@@ -103,6 +103,12 @@ svg {
 .dash-cell-action-bar>button {
     margin-right: 8px;
 }
+.dash-indicator {
+    display: inline-block;
+    float: right;
+    padding: 8px;
+    font-size: 18px;
+}
 .single-line {
     overflow: hidden;
     white-space: nowrap;

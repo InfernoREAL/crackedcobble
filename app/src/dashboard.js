@@ -72,6 +72,7 @@ const Dashboard = React.createClass({
                                         difficulty={ server.difficulty }
                                         hardcore={ server.hardcore }
                                         isActive={ server.isActive }
+                                        portForward={ server.portForward }
                                         onServerStart={ onServerStart }
                                         onServerStop={ onServerStop }
                                         onConsole={ onConsole }

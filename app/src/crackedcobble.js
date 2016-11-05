@@ -64,6 +64,7 @@ const CrackedCobble = React.createClass({
     onCreate(evt) {
         evt.preventDefault();
         this.props.dispatch(actions.requestMinecraftVersions());
+        this.props.dispatch(actions.requestNatStatus());
         this.props.dispatch({ type: 'SHOW_SERVER_CREATE' });
     },
     cancelCreate() {
@@ -105,11 +106,15 @@ const CrackedCobble = React.createClass({
     onServerEdit(server) {
         console.log(`editing server ${server}`);
         this.props.dispatch(actions.requestMinecraftVersions());
+        this.props.dispatch(actions.requestNatStatus());
         this.props.dispatch({ type: 'SHOW_SERVER_EDIT', server });
     },
     renderDashboard() {
         const { isNetworkActive, serverEdit, system, servers, errors } = this.props;
         const { showDeleteConfirmDialog, server } = this.state;
+        // Find the server name for displaying the edit modal
+        const editServer = serverEdit.serverId ? servers.find((s) => s.id === serverEdit.serverId) : null;
+
         return (
             <Grid fluid>
                 <Row style={ { marginTop: 65 } }>
@@ -142,7 +147,11 @@ const CrackedCobble = React.createClass({
                     backdrop="static"
                 >
                     <Modal.Header closeButton>
-                        <Modal.Title>Create Server...</Modal.Title>
+                        { editServer ?
+                            <Modal.Title>Edit server { editServer.name }...</Modal.Title>
+                        :
+                            <Modal.Title>Create Server...</Modal.Title>
+                        }
                     </Modal.Header>
                     <Modal.Body>
                         <ServerSettings

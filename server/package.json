@@ -39,6 +39,7 @@
     "body-parser": "^1.15.1",
     "express": "^4.13.4",
     "isomorphic-fetch": "^2.2.1",
+    "nat-upnp": "^1.0.4",
     "rimraf": "^2.5.4",
     "socket.io": "^1.4.8"
   }

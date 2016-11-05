@@ -32,7 +32,8 @@ const ServerSettings = React.createClass({
                     gameMode: server.mode,
                     difficulty: server.difficulty,
                     hardcore: server.hardcore,
-                    motd: server.motd
+                    motd: server.motd,
+                    portForward: server.portForward
                 },
                 advanced: {
                     seed: server.seed,
@@ -65,7 +66,8 @@ const ServerSettings = React.createClass({
                     gameMode: 0,
                     difficulty: 2,
                     hardcore: false,
-                    motd: 'Welcome to Server 1'
+                    motd: 'Welcome to Server 1',
+                    portForward: false
                 },
                 advanced: {
                     seed: '',
@@ -92,7 +94,7 @@ const ServerSettings = React.createClass({
     componentWillReceiveProps(nextProps) {
         if (this.props.serverEdit !== nextProps.serverEdit) {
             const general = Object.assign({}, this.state.general);
-            // Specify a default server version is the list of versions has been provided
+            // Specify a default server version if the list of versions has been provided
             if (general.mcVersion === '' && nextProps.serverEdit.mcVersions.length > 0) {
                 general.mcVersion = nextProps.serverEdit.mcVersions[0];
             }
@@ -146,6 +148,7 @@ const ServerSettings = React.createClass({
                 <Tab eventKey="general" title="General">
                     <GeneralSettings
                         mcVersions={ this.props.serverEdit.mcVersions }
+                        nat={ this.props.serverEdit.nat }
                         { ...general }
                         setState={ this.setGeneralState }
                     />

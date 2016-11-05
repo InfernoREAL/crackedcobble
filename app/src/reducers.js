@@ -4,7 +4,11 @@ const defaultState = {
         active: false,
         serverId: null,
         errors: [],
-        mcVersions: []
+        mcVersions: [],
+        nat: {
+            available: false,
+            mappings: []
+        }
     },
     system: {
         status: {
@@ -84,7 +88,7 @@ const reducer = (state = defaultState, action) => {
         }
         break;
     case 'SHOW_SERVER_CREATE':
-        newState = patch(state, { serverEdit: patch(state.serverEdit, { active: true, errors: [] }) });
+        newState = patch(state, { serverEdit: patch(state.serverEdit, { active: true, errors: [], serverId: null }) });
         break;
     case 'SHOW_SERVER_EDIT':
         newState = patch(state, { serverEdit: patch(state.serverEdit, {
@@ -95,6 +99,9 @@ const reducer = (state = defaultState, action) => {
         break;
     case 'MINECRAFT_VERSIONS_RECEIVED':
         newState = patch(state, { serverEdit: patch(state.serverEdit, { mcVersions: action.versions }) });
+        break;
+    case 'NAT_STATUS_RECEIVED':
+        newState = patch(state, { serverEdit: patch(state.serverEdit, { nat: action.status }) });
         break;
     case 'OPEN_CONSOLE':
         newState = patch(state, { activeConsole: action.id });

@@ -165,6 +165,19 @@ const requestMinecraftVersions = () => {
     };
 };
 
+const requestNatStatus = () => {
+    return (dispatch) => {
+        return fetchGet('/assets/nat')
+        .then((status) => {
+            return dispatch({ type: 'NAT_STATUS_RECEIVED', status });
+        })
+        .catch((err) => {
+            console.log(err);
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
+        });
+    };
+};
+
 export default {
     createServer,
     updateServer,
@@ -172,6 +185,7 @@ export default {
     refreshSystem,
     refreshServers,
     requestMinecraftVersions,
+    requestNatStatus,
     startServer,
     stopServer
 };

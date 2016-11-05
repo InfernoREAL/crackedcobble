@@ -34,6 +34,7 @@ const ServerWidget = React.createClass({
         maxPlayers: React.PropTypes.number.isRequired,
         numPlayers: React.PropTypes.number.isRequired,
         isActive: React.PropTypes.bool.isRequired,
+        portForward: React.PropTypes.bool.isRequired,
         onServerStart: React.PropTypes.func.isRequired,
         onServerStop: React.PropTypes.func.isRequired,
         onConsole: React.PropTypes.func.isRequired,
@@ -42,7 +43,7 @@ const ServerWidget = React.createClass({
     },
     render() {
         const { id, name, url, motd, mcVersion, flavor, mode, difficulty, hardcore, maxPlayers, numPlayers, isActive,
-            onServerStart, onServerStop, onConsole, onServerDelete, onServerEdit } = this.props;
+            portForward, onServerStart, onServerStop, onConsole, onServerDelete, onServerEdit } = this.props;
         return (
             <div className={ 'dash-cell' + (isActive ? ' server-active' : '') }>
                 <div className="dash-cell-header">
@@ -68,12 +69,16 @@ const ServerWidget = React.createClass({
                         <div className="dash-cell-action-bar">
                             <Button onClick={ () => onServerStop(id) }><Glyphicon glyph="stop" /></Button>
                             <Button onClick={ () => onConsole(id) }><Glyphicon glyph="console" /></Button>
+                            { portForward && <span className="dash-indicator" title="Open to the internet">
+                                <Glyphicon glyph="cloud" /></span> }
                         </div>
                       :
                         <div className="dash-cell-action-bar">
                             <Button onClick={ () => onServerStart(id) }><Glyphicon glyph="play" /></Button>
                             <Button onClick={ () => onServerEdit(id) }><Glyphicon glyph="pencil" /></Button>
                             <Button onClick={ () => onServerDelete(id) }><Glyphicon glyph="trash" /></Button>
+                            { portForward && <span className="dash-indicator" title="Open to the internet">
+                                <Glyphicon glyph="cloud" /></span> }
                         </div>
                     }
                 </div>

@@ -13,6 +13,8 @@ const GeneralSettings = React.createClass({
         difficulty: React.PropTypes.number,
         hardcore: React.PropTypes.bool,
         motd: React.PropTypes.string,
+        portForward: React.PropTypes.bool,
+        nat: React.PropTypes.object.isRequired,
         setState: React.PropTypes.func.isRequired
     },
     onTextChange(field, evt) {
@@ -36,7 +38,8 @@ const GeneralSettings = React.createClass({
         }
     },
     render() {
-        const { name, mcVersion, mcVersions, port, gameMode, difficulty, hardcore, motd, setState } = this.props;
+        const { name, mcVersion, mcVersions, port, gameMode, difficulty, hardcore, motd,
+            portForward, nat, setState } = this.props;
         return (
             <Form horizontal className="tab-form">
                 <FormGroup controlId="name" className={ this.getValidationState('name') }>
@@ -177,6 +180,22 @@ const GeneralSettings = React.createClass({
                             value={ motd }
                             onChange={ (e) => this.onTextChange('motd', e) }
                         />
+                    </Col>
+                </FormGroup>
+
+                <FormGroup controlId="portFoward">
+                    <Col componentClass={ ControlLabel } sm={ 2 }>Open to Internet</Col>
+                    <Col sm={ 10 }>
+                        <Checkbox
+                            inline
+                            name="portFoward"
+                            checked={ portForward }
+                            onChange={ () => this.onCheckboxChange('portForward', !portForward) }
+                        >
+                            Enable { !nat.available &&
+                                <span>(Please enable uPnP forwarding in your router to use this feature.)</span>
+                            }
+                        </Checkbox>
                     </Col>
                 </FormGroup>
             </Form>

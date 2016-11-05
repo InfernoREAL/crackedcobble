@@ -12,6 +12,7 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 const fsutil = require('../util/fsutil');
 const mc = require('./minecraft');
+const nat = require('./nat');
 
 // Settings
 const settings = require('../settings.js');
@@ -107,6 +108,17 @@ router.get('/minecraft', (req, res) => {
     })
     .then((versions) => {
         return res.json(versions.filter((v) => v).sort(sorter));
+    })
+    .catch((err) => {
+        return res.status(400).send(err.toString());
+    });
+});
+
+
+router.get('/nat', (req, res) => {
+    nat.getNatStatus()
+    .then((status) => {
+        return res.json(status);
     })
     .catch((err) => {
         return res.status(400).send(err.toString());
