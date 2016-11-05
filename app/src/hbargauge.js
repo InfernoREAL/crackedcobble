@@ -16,7 +16,8 @@ const HBarGauge = React.createClass({
         this.drawGauge();
     },
     drawGauge() {
-        const { barValue } = this.props;
+        let { barValue } = this.props;
+        barValue = Math.min(1.0, barValue);
         const scale = ((1.0 - barValue) % 1.0) + 1.0;
         const paper = snap(this.svg);
         paper.clear();
