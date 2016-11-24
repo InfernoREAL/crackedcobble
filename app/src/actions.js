@@ -152,6 +152,18 @@ const deleteServer = (server) => {
     };
 };
 
+const resetMap = (server) => {
+    return (dispatch) => {
+        return fetchDelete(`/servers/${server}/map`)
+        .then(() => {
+            return dispatch({ type: 'MAP_RESET', server: { id: server } });
+        })
+        .catch((err) => {
+            return dispatch({ type: 'ADD_ERROR', error: err.toString() });
+        });
+    };
+};
+
 const requestMinecraftVersions = () => {
     return (dispatch) => {
         return fetchGet('/assets/minecraft')
@@ -186,6 +198,7 @@ export default {
     refreshServers,
     requestMinecraftVersions,
     requestNatStatus,
+    resetMap,
     startServer,
     stopServer
 };

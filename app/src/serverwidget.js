@@ -39,11 +39,13 @@ const ServerWidget = React.createClass({
         onServerStop: React.PropTypes.func.isRequired,
         onConsole: React.PropTypes.func.isRequired,
         onServerDelete: React.PropTypes.func.isRequired,
-        onServerEdit: React.PropTypes.func.isRequired
+        onServerEdit: React.PropTypes.func.isRequired,
+        onResetMap: React.PropTypes.func.isRequired
     },
     render() {
         const { id, name, url, motd, mcVersion, flavor, mode, difficulty, hardcore, maxPlayers, numPlayers, isActive,
-            portForward, onServerStart, onServerStop, onConsole, onServerDelete, onServerEdit } = this.props;
+            portForward, onServerStart, onServerStop, onConsole, onServerDelete, onServerEdit,
+            onResetMap } = this.props;
         return (
             <div className={ 'dash-cell' + (isActive ? ' server-active' : '') }>
                 <div className="dash-cell-header">
@@ -67,16 +69,29 @@ const ServerWidget = React.createClass({
                     </div>
                     { isActive ?
                         <div className="dash-cell-action-bar">
-                            <Button onClick={ () => onServerStop(id) }><Glyphicon glyph="stop" /></Button>
-                            <Button onClick={ () => onConsole(id) }><Glyphicon glyph="console" /></Button>
+                            <Button onClick={ () => onServerStop(id) } title="Stop server">
+                                <Glyphicon glyph="stop"/>
+                            </Button>
+                            <Button onClick={ () => onConsole(id) } title="Open server console">
+                                <Glyphicon glyph="console"/>
+                            </Button>
                             { portForward && <span className="dash-indicator" title="Open to the internet">
                                 <Glyphicon glyph="cloud" /></span> }
                         </div>
                       :
                         <div className="dash-cell-action-bar">
-                            <Button onClick={ () => onServerStart(id) }><Glyphicon glyph="play" /></Button>
-                            <Button onClick={ () => onServerEdit(id) }><Glyphicon glyph="pencil" /></Button>
-                            <Button onClick={ () => onServerDelete(id) }><Glyphicon glyph="trash" /></Button>
+                            <Button onClick={ () => onServerStart(id) } title="Start server">
+                                <Glyphicon glyph="play"/>
+                            </Button>
+                            <Button onClick={ () => onServerEdit(id) } title="Edit server properties">
+                                <Glyphicon glyph="pencil"/>
+                            </Button>
+                            <Button onClick={ () => onResetMap(id) } title="Reset map">
+                                <i className="fa fa-recycle"></i>
+                            </Button>
+                            <Button onClick={ () => onServerDelete(id) } title="Delete server">
+                                <Glyphicon glyph="trash"/>
+                            </Button>
                             { portForward && <span className="dash-indicator" title="Open to the internet">
                                 <Glyphicon glyph="cloud" /></span> }
                         </div>

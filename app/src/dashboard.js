@@ -14,11 +14,13 @@ const Dashboard = React.createClass({
         onServerStop: React.PropTypes.func.isRequired,
         onConsole: React.PropTypes.func.isRequired,
         onServerDelete: React.PropTypes.func.isRequired,
-        onServerEdit: React.PropTypes.func.isRequired
+        onServerEdit: React.PropTypes.func.isRequired,
+        onResetMap: React.PropTypes.func.isRequired
     },
     // Sm after every two, md after every 3
     render() {
-        const { status, servers, onServerStart, onServerStop, onConsole, onServerDelete, onServerEdit } = this.props;
+        const { status, servers, onServerStart, onServerStop, onConsole, onServerDelete, onServerEdit,
+            onResetMap } = this.props;
         return (
             <Grid>
                 <Row>
@@ -78,6 +80,7 @@ const Dashboard = React.createClass({
                                         onConsole={ onConsole }
                                         onServerDelete={ onServerDelete }
                                         onServerEdit={ onServerEdit }
+                                        onResetMap={ onResetMap }
                                     />
                                 </Col>
                                 { (idx + 2) % 2 === 0 ?

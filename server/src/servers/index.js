@@ -501,6 +501,19 @@ const deleteServer = (server) => {
 };
 
 
+/**
+ * Resets the map (by deleting the generated world) for the specified server.
+ */
+const resetMap = (server) => {
+    console.log('reset map for server ' + server);
+    const serverPath = path.join(serverBasePath, server);
+    return rimraf(path.join(serverPath, 'world'))
+    .then(() => {
+        sio.emit('serverMapReset', { id: server });
+    });
+};
+
+
 // Webservice interface
 
 router.get('/bulk-info', (req, res) => {
@@ -580,6 +593,17 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
     deleteServer(req.params.id)
+    .then(() => {
+        return res.json({});
+    })
+    .catch((err) => {
+        return res.status(400).send(err.toString());
+    });
+});
+
+
+router.delete('/:id/map', (req, res) => {
+    resetMap(req.params.id)
     .then(() => {
         return res.json({});
     })

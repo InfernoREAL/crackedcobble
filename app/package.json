@@ -23,6 +23,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "babel-polyfill": "^6.9.1",
+    "font-awesome": "^4.7.0",
     "isomorphic-fetch": "^2.2.1",
     "react": "^15.1.0",
     "react-bootstrap": "^0.29.4",

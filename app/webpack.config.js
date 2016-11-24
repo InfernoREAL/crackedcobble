@@ -32,10 +32,8 @@ var common = {
         loaders: [
             { test: /\.s?css$/, loader: "style!css!sass", includes: [PATHS.src, 'node_modules'] },
             { test: /\.jsx?$/, loader: 'babel', includes: [PATHS.src, PATHS.specs] },
-            { test: /\.woff2?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff' },
-            { test: /\.ttf$/, loader: 'file-loader' },
-            { test: /\.eot$/, loader: 'file-loader' },
-            { test: /\.svg$/, loader: 'file-loader' },
+            { test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff' },
+            { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'file-loader' },
             { test: require.resolve('snapsvg'), loader: 'imports-loader?this=>window,fix=>module.exports=0' }
         ],
         noParse: [

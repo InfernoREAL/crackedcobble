@@ -43,6 +43,9 @@ img {
 }
 
 // Site=specific
+$fa-font-path: "~font-awesome/fonts";
+@import "~font-awesome/scss/font-awesome";
+
 #container {
     min-width: 320px;
     height: 100%;

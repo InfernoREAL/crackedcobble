@@ -21,7 +21,7 @@ const CrackedCobble = React.createClass({
         errors: React.PropTypes.array.isRequired
     },
     getInitialState() {
-        return { showDeleteConfirmDialog: false, server: null };
+        return { showDeleteConfirmDialog: false, showResetConfirmDialog: false, server: null };
     },
     componentDidMount() {
         const { dispatch, ws } = this.props;
@@ -98,6 +98,12 @@ const CrackedCobble = React.createClass({
     hideDeleteConfirmDialog() {
         this.setState({ showDeleteConfirmDialog: false, server: null });
     },
+    requestMapReset(server) {
+        this.setState({ showResetConfirmDialog: true, server });
+    },
+    hideResetConfirmDialog() {
+        this.setState({ showResetConfirmDialog: false, server: null });
+    },
     onServerDelete(server) {
         console.log(`deleting server ${server}!`);
         this.props.dispatch(actions.deleteServer(server));
@@ -109,9 +115,14 @@ const CrackedCobble = React.createClass({
         this.props.dispatch(actions.requestNatStatus());
         this.props.dispatch({ type: 'SHOW_SERVER_EDIT', server });
     },
+    onResetMap(server) {
+        console.log(`resetting map for server ${server}`);
+        this.props.dispatch(actions.resetMap(server));
+        this.hideResetConfirmDialog();
+    },
     renderDashboard() {
         const { isNetworkActive, serverEdit, system, servers, errors } = this.props;
-        const { showDeleteConfirmDialog, server } = this.state;
+        const { showDeleteConfirmDialog, showResetConfirmDialog, server } = this.state;
         // Find the server name for displaying the edit modal
         const editServer = serverEdit.serverId ? servers.find((s) => s.id === serverEdit.serverId) : null;
 
@@ -138,6 +149,7 @@ const CrackedCobble = React.createClass({
                         onConsole={ this.onConsoleOpen }
                         onServerDelete={ this.requestServerDeletion }
                         onServerEdit={ this.onServerEdit }
+                        onResetMap ={ this.requestMapReset }
                     />
                 </Row>
                 <Modal
@@ -174,6 +186,18 @@ const CrackedCobble = React.createClass({
                     <Modal.Footer>
                         <Button onClick={ () => this.onServerDelete(server) }>Yes</Button>
                         <Button bsStyle="primary" onClick={ this.hideDeleteConfirmDialog }>No</Button>
+                    </Modal.Footer>
+                </Modal>
+                <Modal show={ showResetConfirmDialog } onHide={ this.hideResetConfirmDialog } backdrop="static">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Reset map...</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                    Reset map for server '{ server }'?
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={ () => this.onResetMap(server) }>Yes</Button>
+                        <Button bsStyle="primary" onClick={ this.hideResetConfirmDialog }>No</Button>
                     </Modal.Footer>
                 </Modal>
 
