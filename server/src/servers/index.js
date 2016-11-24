@@ -301,15 +301,21 @@ const activateServer = (serverId) => {
  * Stops server specified by `serverId`.
  */
 const deactivateServer = (serverId) => {
+    const serverPath = path.join(serverBasePath, serverId);
     const server = activeServers[serverId];
     if (server) {
         server.process.stdin.write('\nstop\n');
     }
-    nat.closePort(server.port)
+    return fsutil.loadJson(path.join(serverPath, serverControlFile))
+    .then((info) => {
+        if (info.portForward) {
+            return nat.closePort(server.port);
+        }
+        return BPromise.resolve();
+    })
     .catch((err) => {
         console.log(`Error unmapping port ${server.port} for server ${serverId}: ${err.toString()}`);
     });
-    return BPromise.resolve();
 };
 
 
